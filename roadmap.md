@@ -1,0 +1,4 @@
+- [ ] Build responsive DSA Journey navigation and pages with unique metadata.
+- [ ] Add seeded roadmap/problems, searchable editing, and status/progress calculations.
+- [ ] Add daily plans, session history, streaks, revisions, and analytics views.
+- [ ] Verify app behavior, persistence, tests, desktop/mobile presentation, and diagnostics.
