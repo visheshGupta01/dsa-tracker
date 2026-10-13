@@ -268,9 +268,10 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 }
 
 function StatusBadge({ status }: { status: ProblemStatus }) {
+  const normalized: ProblemStatus = status === "Revise" ? "Needs Revision" : status === "Mastered" ? "Solved" : status === "Learning" ? "Not Started" : status;
   const icons: Record<ProblemStatus, typeof Circle> = { "Not Started": Circle, Learning: Activity, Solved: CheckCircle2, Revise: RotateCcw, Mastered: Trophy, "Needs Revision": RotateCcw };
-  const Icon = icons[status];
-  return <span className={cn("status-badge", `status-${status.toLowerCase().replace(" ", "-")}`)}><Icon size={12} />{status}</span>;
+  const Icon = icons[normalized];
+  return <span className={cn("status-badge", `status-${normalized.toLowerCase().replace(" ", "-")}`)}><Icon size={12} />{normalized}</span>;
 }
 
 function EmptyState({ title, message }: { title: string; message: string }) {
