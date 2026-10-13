@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   Activity, ArrowDownUp, ArrowRight, BookOpen, CalendarClock, Check, CheckCircle2, ChevronDown,
@@ -18,7 +18,7 @@ import { roadmap, type Confidence, type DailyTask, type Difficulty, type DsaProb
 
 type Section = "Dashboard" | "Roadmap" | "Problems" | "Revision" | "Analytics";
 const sectionMeta: Record<Section, { title: string; eyebrow: string; description: string }> = {
-  Dashboard: { title: "Your next hour, well spent.", eyebrow: "MONDAY, OCTOBER 13", description: "One focused session at a time. Pick up where you left off." },
+  Dashboard: { title: "Your next hour, well spent.", eyebrow: "YOUR STUDY SPACE", description: "One focused session at a time. Pick up where you left off." },
   Roadmap: { title: "The bigger picture.", eyebrow: "YOUR ROADMAP", description: "Seventeen steps from the fundamentals to advanced algorithms." },
   Problems: { title: "Every problem, in one place.", eyebrow: "PROBLEM TRACKER", description: "Find your next challenge, update a status, or revisit a solution." },
   Revision: { title: "Make it stick.", eyebrow: "SPACED REPETITION", description: "Come back to the problems you have already worked through." },
@@ -137,7 +137,7 @@ export function DsaJourney({ section }: { section: Section }) {
             {section === "Problems" && <Button onClick={() => openProblem()}><Plus size={16} /> Add problem</Button>}
           </div>
           {!data ? <LoadingState /> : <>
-            {section === "Dashboard" && <DashboardPage {...common} onFinish={(session) => setData(session)} />}
+            {section === "Dashboard" && <DashboardPage {...common} onFinish={(change) => setData((previous) => previous ? change(previous) : previous)} />}
             {section === "Roadmap" && <RoadmapPage {...common} />}
             {section === "Problems" && <ProblemsPage {...common} onEdit={openProblem} onAdd={() => openProblem()} />}
             {section === "Revision" && <RevisionPage {...common} />}
@@ -253,13 +253,13 @@ function EmptyState({ title, message }: { title: string; message: string }) {
   return <div className="empty-state"><span className="empty-icon"><ListChecks size={19} /></span><b>{title}</b><p>{message}</p></div>;
 }
 
-function RoadmapPage({ data, openProblem }: { data: JourneyData | null; openProblem: (problem?: DsaProblem) => void }) {
+function RoadmapPage({ data, today, updateProblem, openProblem }: { data: JourneyData | null; today: string; updateProblem: (id: string, patch: Partial<DsaProblem>) => void; openProblem: (problem?: DsaProblem) => void }) {
   if (!data) return null;
   const topics = topicStats(data.problems);
   const solved = solvedCount(data);
   return <>
     <section className="roadmap-summary surface-panel"><div className="roadmap-sum-icon"><BookOpen size={20} /></div><div className="roadmap-sum-copy"><span>STRIVER A2Z SHEET</span><b>{solved} <i>/</i> {data.problems.length} <small>problems solved</small></b></div><div className="roadmap-sum-progress"><ProgressBar value={data.problems.length ? solved / data.problems.length * 100 : 0} /><span>{data.problems.length ? Math.round(solved / data.problems.length * 100) : 0}% overall</span></div><div className="roadmap-sum-meta"><span>17 learning steps</span><span>·</span><span>51 curated problems</span></div></section>
-    <section className="roadmap-list">{topics.map((topic, index) => <details className="roadmap-step surface-panel" key={topic.id} open={index === 2 || index === 3 || undefined}><summary><span className={cn("step-check", topic.percent === 100 && "is-done")}>{topic.percent === 100 ? <Check size={14} /> : String(topic.step).padStart(2, "0")}</span><div className="step-name"><b>{topic.title}</b><small>{topic.done}/{topic.total} problems complete</small></div><div className="step-progress"><ProgressBar value={topic.percent} /><span>{topic.percent}%</span></div><span className="step-chevron"><ChevronDown size={16} /></span></summary><div className="step-problems">{topic.problems.map((problem) => <div className="roadmap-problem-row" key={problem.id}><button className={cn("roadmap-problem-check", completedStatuses.has(problem.status) && "checked", problem.status === "Revise" && "needs-revision")} aria-label={`Set ${problem.title} as solved`} onClick={() => openProblem(problem)}>{completedStatuses.has(problem.status) ? <Check size={13} /> : problem.status === "Revise" ? <RotateCcw size={12} /> : <Circle size={13} />}</button><button className="roadmap-problem-name" onClick={() => openProblem(problem)}>{problem.title}</button><DifficultyBadge difficulty={problem.difficulty} /><StatusBadge status={problem.status} /><button className="roadmap-row-edit" aria-label={`Edit ${problem.title}`} onClick={() => openProblem(problem)}><ArrowRight size={14} /></button></div>)}</div></details>)}</section>
+    <section className="roadmap-list">{topics.map((topic, index) => <details className="roadmap-step surface-panel" key={topic.id} open={index === 2 || index === 3 || undefined}><summary><span className={cn("step-check", topic.percent === 100 && "is-done")}>{topic.percent === 100 ? <Check size={14} /> : String(topic.step).padStart(2, "0")}</span><div className="step-name"><b>{topic.title}</b><small>{topic.done}/{topic.total} problems complete</small></div><div className="step-progress"><ProgressBar value={topic.percent} /><span>{topic.percent}%</span></div><span className="step-chevron"><ChevronDown size={16} /></span></summary><div className="step-problems">{topic.problems.map((problem) => <div className="roadmap-problem-row" key={problem.id}><button className={cn("roadmap-problem-check", completedStatuses.has(problem.status) && "checked", problem.status === "Revise" && "needs-revision")} aria-label={`Mark ${problem.title} ${completedStatuses.has(problem.status) ? "not started" : "solved"}`} onClick={() => updateProblem(problem.id, { status: completedStatuses.has(problem.status) ? "Not Started" : "Solved", solvedAt: completedStatuses.has(problem.status) ? "" : today })}>{completedStatuses.has(problem.status) ? <Check size={13} /> : problem.status === "Revise" ? <RotateCcw size={12} /> : <Circle size={13} />}</button><button className="roadmap-problem-name" onClick={() => openProblem(problem)}>{problem.title}</button><DifficultyBadge difficulty={problem.difficulty} /><StatusBadge status={problem.status} /><button className="roadmap-row-edit" aria-label={`Edit ${problem.title}`} onClick={() => openProblem(problem)}><ArrowRight size={14} /></button></div>)}</div></details>)}</section>
     <p className="data-note"><Sparkles size={14} /> Progress reflects completed problems, calculated as you go.</p>
   </>;
 }
@@ -362,20 +362,20 @@ function ProblemEditor({ open, problem, onOpenChange, onSave }: { open: boolean;
   const [form, setForm] = useState<Partial<DsaProblem>>({});
   useEffect(() => { setForm(problem ?? { title: "", topic: "", difficulty: "Easy", status: "Not Started", attempts: 0, solvedWithoutHelp: false, confidence: "needed-thinking" }); }, [problem, open]);
   const setField = <K extends keyof DsaProblem>(key: K, value: DsaProblem[K]) => setForm((current) => ({ ...current, [key]: value }));
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!form.title?.trim() || !form.topic?.trim()) { toast.error("Add a problem name and topic first"); return; }
     const status = form.status ?? "Not Started";
     const solvedAt = status === "Solved" || status === "Mastered" ? form.solvedAt || localDate() : form.solvedAt || "";
     const confidence = form.confidence ?? "needed-thinking";
-    onSave({ ...createEditorDefaults, ...form, title: form.title.trim(), topic: form.topic.trim(), difficulty: form.difficulty ?? "Easy", status, confidence, solvedAt, nextRevisionAt: form.nextRevisionAt || (solvedAt ? revisionDate(solvedAt, confidence) : "") } as DsaProblem);
+    onSave({ ...createEditorDefaults, ...form, id: form.id || `custom-${Date.now().toString(36)}`, title: form.title.trim(), topic: form.topic.trim(), difficulty: form.difficulty ?? "Easy", status, confidence, solvedAt, nextRevisionAt: form.nextRevisionAt || (solvedAt ? revisionDate(solvedAt, confidence) : "") } as DsaProblem);
   };
   return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="editor-dialog"><DialogHeader><span className="dialog-eyebrow"><Code2 size={14} /> PROBLEM DETAILS</span><DialogTitle>{problem ? "Update problem" : "Add a problem"}</DialogTitle><DialogDescription>Keep it light. You can always fill in more details later.</DialogDescription></DialogHeader><form onSubmit={submit} className="problem-editor-form"><div className="form-grid"><FormField label="Problem name" className="wide-field"><Input required autoFocus placeholder="e.g. Two Sum" value={form.title ?? ""} onChange={(event) => setField("title", event.target.value)} /></FormField><FormField label="Topic"><select className="form-select" value={form.topic ?? ""} onChange={(event) => setField("topic", event.target.value)}><option value="">Choose a topic</option>{roadmap.map((item) => <option key={item.id}>{item.title}</option>)}<option>Other</option></select></FormField><FormField label="Difficulty"><select className="form-select" value={form.difficulty ?? "Easy"} onChange={(event) => setField("difficulty", event.target.value as Difficulty)}>{difficultyOptions.map((item) => <option key={item}>{item}</option>)}</select></FormField><FormField label="Status"><select className="form-select" value={form.status ?? "Not Started"} onChange={(event) => setField("status", event.target.value as ProblemStatus)}>{statusOptions.map((item) => <option key={item}>{item}</option>)}</select></FormField><FormField label="Attempts"><Input type="number" min="0" value={form.attempts ?? 0} onChange={(event) => setField("attempts", Number(event.target.value))} /></FormField><FormField label="Problem URL"><Input type="url" placeholder="https://…" value={form.problemUrl ?? ""} onChange={(event) => setField("problemUrl", event.target.value)} /></FormField><FormField label="GitHub solution URL"><Input type="url" placeholder="https://github.com/…" value={form.solutionUrl ?? ""} onChange={(event) => setField("solutionUrl", event.target.value)} /></FormField><FormField label="Approach"><Input placeholder="e.g. Hash map" value={form.approach ?? ""} onChange={(event) => setField("approach", event.target.value)} /></FormField><FormField label="Time complexity"><Input placeholder="O(n)" value={form.timeComplexity ?? ""} onChange={(event) => setField("timeComplexity", event.target.value)} /></FormField><FormField label="Space complexity"><Input placeholder="O(n)" value={form.spaceComplexity ?? ""} onChange={(event) => setField("spaceComplexity", event.target.value)} /></FormField><FormField label="Personal notes" className="wide-field"><Textarea rows={3} placeholder="Key insight, edge cases, or something to remember…" value={form.notes ?? ""} onChange={(event) => setField("notes", event.target.value)} /></FormField></div><label className="checkbox-row"><Checkbox checked={form.solvedWithoutHelp ?? false} onCheckedChange={(checked) => setField("solvedWithoutHelp", checked === true)} /><span>I solved this without help</span></label>{problem && <div className="problem-history"><span>Last solved <b>{problem.solvedAt ? titleCaseDate(problem.solvedAt) : "Not yet"}</b></span><span>Last revised <b>{problem.lastRevisedAt ? titleCaseDate(problem.lastRevisedAt) : "Not yet"}</b></span><span>Next revision <b>{problem.nextRevisionAt ? titleCaseDate(problem.nextRevisionAt) : "Not scheduled"}</b></span></div>}<DialogFooter><Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button><Button type="submit"><Check size={15} />{problem ? "Save changes" : "Add problem"}</Button></DialogFooter></form></DialogContent></Dialog>;
 }
 
 const createEditorDefaults: DsaProblem = { id: "", title: "", topic: "", difficulty: "Easy", status: "Not Started", problemUrl: "", solutionUrl: "", attempts: 0, solvedWithoutHelp: false, approach: "", timeComplexity: "", spaceComplexity: "", notes: "", solvedAt: "", lastRevisedAt: "", nextRevisionAt: "", confidence: "needed-thinking" };
 
-function FormField({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+function FormField({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
   return <label className={cn("form-field", className)}><span>{label}</span>{children}</label>;
 }
 
