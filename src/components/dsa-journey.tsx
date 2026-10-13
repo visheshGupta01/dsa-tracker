@@ -206,7 +206,7 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
   const allTasks = data.dailyTasks[today] ?? tasksForDay(data, today);
   const todaySession = data.sessions.find((session) => session.date === today);
   const completed = todaySession?.completed === true;
-  const currentTopic = topics.find((topic) => topic.title === "Binary Search");
+  const currentTopic = topics.find((topic) => topic.problems.some((problem) => problem.status === "Not Started")) ?? topics.find((topic) => topic.problems.some((problem) => problem.status === "Needs Revision")) ?? topics[0];
   const due = data.problems.filter((problem) => problem.status === "Needs Revision" && problem.nextRevisionAt && problem.nextRevisionAt <= today).length;
   const recent = [...data.problems].filter((problem) => problem.solvedAt).sort((a, b) => b.solvedAt.localeCompare(a.solvedAt)).slice(0, 4);
   const setTasks = (tasks: DailyTask[]) => onFinish((previous) => ({ ...previous, dailyTasks: { ...previous.dailyTasks, [today]: tasks } }));
