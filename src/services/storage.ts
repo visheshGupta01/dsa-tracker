@@ -1,6 +1,26 @@
 import { roadmap, problemIdFor, type Confidence, type DailyTask, type DsaProblem, type JourneyData, type ProblemStatus, type StudySession } from "@/data/roadmap";
 
 const STORAGE_KEY = "dsa-journey:v1";
+const BACKUP_VERSION = 1;
+
+export function normaliseJourney(data: JourneyData): JourneyData {
+  return { ...data, problems: data.problems.map((problem) => ({ ...problem, status: problem.status === "Revise" ? "Needs Revision" : problem.status === "Mastered" ? "Solved" : problem.status === "Learning" ? "Not Started" : problem.status })) };
+}
+
+export function exportJourney(data: JourneyData): string {
+  return JSON.stringify({ app: "DSA Journey", version: BACKUP_VERSION, exportedAt: new Date().toISOString(), data }, null, 2);
+}
+
+export function importJourney(json: string): JourneyData {
+  const parsed: unknown = JSON.parse(json);
+  if (!parsed || typeof parsed !== "object") throw new Error("This file is not a valid DSA Journey backup.");
+  const envelope = parsed as { data?: unknown };
+  const candidate = envelope.data && typeof envelope.data === "object" ? envelope.data : parsed;
+  const journey = candidate as Partial<JourneyData>;
+  if (!Array.isArray(journey.problems) || !Array.isArray(journey.sessions)) throw new Error("Backup must contain problem and study-session arrays.");
+  return normaliseJourney({ problems: journey.problems as DsaProblem[], sessions: journey.sessions as StudySession[], dailyTasks: journey.dailyTasks ?? {}, dailyMinutes: journey.dailyMinutes ?? {} });
+}
+
 const revisionDays: Record<Confidence, number> = { easy: 7, "needed-thinking": 4, "needed-hint": 2, "could-not-solve": 1 };
 
 export function localDate(date = new Date()): string {
@@ -87,7 +107,7 @@ export function readJourney(): JourneyData | null {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
     const parsed = JSON.parse(stored) as JourneyData;
-    return Array.isArray(parsed.problems) && Array.isArray(parsed.sessions) ? parsed : null;
+    return Array.isArray(parsed.problems) && Array.isArray(parsed.sessions) ? normaliseJourney(parsed) : null;
   } catch { return null; }
 }
 
