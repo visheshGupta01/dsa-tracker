@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import {
   Activity, ArrowDownUp, ArrowRight, BookOpen, CalendarClock, Check, CheckCircle2, ChevronDown,
   Circle, Clock3, Code2, Flame, Gauge, LayoutDashboard, ListChecks, Plus, RotateCcw,
-  Search, Settings2, Sparkles, Target, Trash2, TrendingUp, Trophy, X,
+  Search, Settings2, Sparkles, Target, Trash2, TrendingUp, Trophy, X, ExternalLink, PlayCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -305,6 +305,20 @@ function ProblemsPage({ data, updateProblem, onEdit, onAdd }: { data: JourneyDat
     updateProblem(id, { status, solvedAt: status === "Solved" ? item?.solvedAt || localDate() : item?.solvedAt || "" });
   };
   return <>
+    <section className="surface-panel mb-4 flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
+      <div className="flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-foreground"><PlayCircle size={22} /></span>
+        <div>
+          <span className="eyebrow"><i /> STRIVER'S A2Z COURSE</span>
+          <h2 className="mt-1 text-lg font-semibold">Learn the concept, then solve the problems</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Pair Striver's video lessons with this tracker. Watch a topic, practice its problems below, and mark what you solve or need to revisit.</p>
+        </div>
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-2">
+        <a className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90" href="https://www.youtube.com/playlist?list=PLgUwDviBIf0oF6QL8m22w1hIDC1vJ_BHz" target="_blank" rel="noreferrer"><PlayCircle size={15} /> Watch video course <ExternalLink size={13} /></a>
+        <a className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted" href="https://takeuforward.org/prep-hub/strivers-a2z-dsa-sheet" target="_blank" rel="noreferrer">Official A2Z hub <ExternalLink size={13} /></a>
+      </div>
+    </section>
     <div className="problem-overview"><div><strong>{data.problems.length}</strong><span>Total problems</span></div><div><strong>{solvedCount(data)}</strong><span>Solved</span></div><div><strong>{data.problems.filter((problem) => problem.status === "Not Started").length}</strong><span>Not started</span></div><div><strong>{data.problems.filter((problem) => problem.nextRevisionAt && problem.nextRevisionAt <= localDate()).length}</strong><span>To revise</span></div></div>
     <section className="surface-panel problem-table-panel"><div className="problem-toolbar"><div className="search-field"><Search size={16} /><Input aria-label="Search problems" placeholder="Search by problem or topic…" value={query} onChange={(event) => setQuery(event.target.value)} /><kbd>/</kbd></div><div className="filter-controls"><select aria-label="Filter by topic" value={topic} onChange={(event) => setTopic(event.target.value)}><option>All topics</option>{topics.map((item) => <option key={item}>{item}</option>)}</select><select aria-label="Filter by difficulty" value={difficulty} onChange={(event) => setDifficulty(event.target.value)}><option>All difficulties</option>{difficultyOptions.map((item) => <option key={item}>{item}</option>)}</select><select aria-label="Filter by status" value={status} onChange={(event) => setStatus(event.target.value)}><option>All statuses</option>{statusOptions.map((item) => <option key={item}>{item}</option>)}</select><select aria-label="Sort problems" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="default">Roadmap order</option><option value="title">Name A–Z</option><option value="difficulty">Difficulty</option></select></div></div>
       <div className="problem-table-scroll"><table className="problem-table"><thead><tr><th>PROBLEM</th><th>TOPIC</th><th>DIFFICULTY</th><th>STATUS</th><th>ATTEMPTS</th><th>LAST SOLVED</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{filtered.map((problem) => <tr key={problem.id}><td>{problem.problemUrl ? <a className="table-problem-name" href={problem.problemUrl} target="_blank" rel="noreferrer">{problem.title}</a> : <button className="table-problem-name" onClick={() => onEdit(problem)}>{problem.title}</button>}</td><td><span className="topic-pill">{topicLabel(problem.topic)}</span>{problem.subtopic && <small className="subtopic-label">{problem.subtopic}</small>}</td><td><DifficultyBadge difficulty={problem.difficulty} /></td><td><select aria-label={`Status for ${problem.title}`} className={cn("table-status-select", `status-select-${problem.status.toLowerCase().replace(" ", "-")}`)} value={problem.status} onChange={(event) => onStatus(problem.id, event.target.value as ProblemStatus)}>{statusOptions.map((item) => <option key={item}>{item}</option>)}</select></td><td className="attempt-count">{problem.attempts || "—"}</td><td className="solved-date">{problem.solvedAt ? titleCaseDate(problem.solvedAt) : "—"}</td><td><button className="row-action" aria-label={`Edit ${problem.title}`} onClick={() => onEdit(problem)}><ArrowRight size={15} /></button></td></tr>)}</tbody></table></div>
