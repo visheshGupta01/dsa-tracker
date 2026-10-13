@@ -1,5 +1,5 @@
 export type Difficulty = "Easy" | "Medium" | "Hard";
-export type ProblemStatus = "Not Started" | "Learning" | "Solved" | "Revise" | "Mastered";
+export type ProblemStatus = "Not Started" | "Learning" | "Solved" | "Revise" | "Mastered" | "Needs Revision";
 export type Confidence = "easy" | "needed-thinking" | "needed-hint" | "could-not-solve";
 
 export interface RoadmapTopic {
