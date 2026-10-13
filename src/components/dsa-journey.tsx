@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { activityByDay, completedStatuses, solveConfidenceDelay, solvedCount, streakStats, topicLabel, topicStats } from "@/lib/dsa";
-import { createStarterData, localDate, minutesForDay, readJourney, resetJourney, revisionDate, tasksForDay, writeJourney } from "@/services/storage";
+import { createStarterData, exportJourney, importJourney, localDate, minutesForDay, readJourney, resetJourney, revisionDate, tasksForDay, writeJourney } from "@/services/storage";
 import { roadmap, type Confidence, type DailyTask, type Difficulty, type DsaProblem, type JourneyData, type ProblemStatus } from "@/data/roadmap";
 
 type Section = "Dashboard" | "DSA Sheet" | "Progress";
@@ -73,6 +73,30 @@ export function DsaJourney({ section }: { section: Section }) {
     setEditingProblem(problem ?? null);
     setProblemDialog(true);
   };
+  const handleExport = () => {
+    if (!data) return;
+    const blob = new Blob([exportJourney(data)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `dsa-journey-backup-${today}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    toast.success("Backup downloaded");
+  };
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const restored = importJourney(await file.text());
+      if (!window.confirm("Restore this backup? It will replace the progress currently saved in this browser.")) return;
+      setData(restored);
+      toast.success("Backup restored");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not read this backup file");
+    }
+  };
   const handleReset = () => {
     if (!window.confirm("Reset your tracker and restore the sample problems? Your saved changes will be removed.")) return;
     resetJourney();
@@ -120,7 +144,7 @@ export function DsaJourney({ section }: { section: Section }) {
         </div>
         <div className="sidebar-bottom">
           <div className="focus-card"><div className="focus-glyph"><Target size={16} /></div><span>One hour a day.<br /><b>That's the whole plan.</b></span></div>
-          <Button variant="ghost" size="sm" onClick={handleReset} className="reset-button"><Settings2 size={15} /> Reset sample data</Button>
+          <div className="backup-actions"><Button variant="ghost" size="sm" onClick={handleExport} disabled={!data}><ArrowDownUp size={14} /> Export JSON</Button><label className="backup-import-button" htmlFor="journey-backup-input">Import JSON</label><input id="journey-backup-input" className="sr-only" type="file" accept="application/json,.json" onChange={handleImport} /></div><Button variant="ghost" size="sm" onClick={handleReset} className="reset-button"><Settings2 size={15} /> Reset sample data</Button>
           <div className="profile-row"><div className="profile-avatar">VG</div><div><b>Your journey</b><small>Personal workspace</small></div><Sparkles size={15} className="profile-sparkle" /></div>
         </div>
       </aside>
@@ -337,7 +361,7 @@ function AnalyticsPage({ data, today }: { data: JourneyData | null; today: strin
     <section className="surface-panel analytics-topics"><PanelTitle title="Topic progress" trailing="View roadmap" href="/roadmap" /><div className="analytics-topic-grid">{topics.map((topic) => <div className="analytics-topic" key={topic.id}><div><b>{topic.title}</b><span>{topic.done}/{topic.total} problems</span></div><ProgressBar value={topic.percent} /><small>{topic.percent}%</small></div>)}</div></section>
     <section className="surface-panel heatmap-panel"><PanelTitle title="Activity across the year" trailing={`${activity.size} active days`} /><Heatmap sessions={data.sessions} today={today} /><div className="heatmap-footer"><span>Each mark is a day you practiced</span><span>Less <HeatScale /> More</span></div></section>
     <section className="surface-panel recent-activity-panel"><PanelTitle title="Recent activity" trailing="Your last study days" /><div className="activity-list">{lastActivityDays.map(([date, count]) => <div key={date} className="activity-list-row"><span className="activity-calendar"><CalendarClock size={15} /></span><span><b>{titleCaseDate(date)}</b><small>{count} practice {count === 1 ? "activity" : "activities"}</small></span><div className="activity-level">{Array.from({ length: 4 }, (_, i) => <i key={i} className={i < Math.min(4, count) ? "filled" : ""} />)}</div></div>)}</div></section>
-    <div className="export-note"><Sparkles size={14} /><span>Your progress is saved in this browser and stays private to you.</span></div>
+    <div className="export-note"><Sparkles size={14} /><span>Your progress is saved in this browser. Export a JSON backup before switching browsers or devices.</span></div>
   </>;
 }
 
