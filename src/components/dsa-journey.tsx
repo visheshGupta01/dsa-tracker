@@ -207,7 +207,7 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
   const todaySession = data.sessions.find((session) => session.date === today);
   const completed = todaySession?.completed === true;
   const currentTopic = topics.find((topic) => topic.title === "Binary Search");
-  const due = data.problems.filter((problem) => problem.nextRevisionAt && problem.nextRevisionAt <= today).length;
+  const due = data.problems.filter((problem) => problem.status === "Needs Revision" && problem.nextRevisionAt && problem.nextRevisionAt <= today).length;
   const recent = [...data.problems].filter((problem) => problem.solvedAt).sort((a, b) => b.solvedAt.localeCompare(a.solvedAt)).slice(0, 4);
   const setTasks = (tasks: DailyTask[]) => onFinish((previous) => ({ ...previous, dailyTasks: { ...previous.dailyTasks, [today]: tasks } }));
   const setMinutes = (key: "learning" | "practice" | "revision", value: number) => onFinish((previous) => ({ ...previous, dailyMinutes: { ...previous.dailyMinutes, [today]: { ...minutesForDay(previous, today), [key]: Math.max(0, value) } } }));
@@ -255,7 +255,7 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
 
       <aside className="dashboard-column side-column">
         <section className="surface-panel continue-panel"><div className="continue-heading"><div><span className="eyebrow"><i /> PICK UP WHERE YOU LEFT OFF</span><h2>{currentTopic?.title ?? "Binary Search"}</h2></div><span className="continue-symbol"><ArrowDownUp size={17} /></span></div><p className="continue-subtitle">The next step in your A2Z journey</p><div className="continue-progress-label"><span>{currentTopic?.done ?? 0} of {currentTopic?.total ?? 0} problems</span><b>{currentTopic?.percent ?? 0}%</b></div><ProgressBar value={currentTopic?.percent ?? 0} /><Link to="/roadmap" className="continue-link">Continue learning <ArrowRight size={15} /></Link></section>
-        <section className="surface-panel revision-preview"><PanelTitle title="Up next to revise" trailing={`${due} due`} href="/roadmap" />{data.problems.filter((problem) => problem.nextRevisionAt && problem.nextRevisionAt <= today).slice(0, 2).map((problem) => <div className="revision-mini" key={problem.id}><span className="revision-mini-icon"><RotateCcw size={14} /></span><div><b>{problem.title}</b><small>{problem.nextRevisionAt < today ? "Overdue" : "Due today"} · {problem.topic}</small></div><button aria-label={`Revise ${problem.title}`} onClick={() => setRevisionProblem(problem)}><ArrowRight size={14} /></button></div>)}{due === 0 && <p className="all-clear"><CheckCircle2 size={15} /> You're all caught up for today.</p>}</section>
+        <section className="surface-panel revision-preview"><PanelTitle title="Up next to revise" trailing={`${due} due`} href="/roadmap" />{data.problems.filter((problem) => problem.status === "Needs Revision" && problem.nextRevisionAt && problem.nextRevisionAt <= today).slice(0, 2).map((problem) => <div className="revision-mini" key={problem.id}><span className="revision-mini-icon"><RotateCcw size={14} /></span><div><b>{problem.title}</b><small>{problem.nextRevisionAt < today ? "Overdue" : "Due today"} · {problem.topic}</small></div><button aria-label={`Revise ${problem.title}`} onClick={() => setRevisionProblem(problem)}><ArrowRight size={14} /></button></div>)}{due === 0 && <p className="all-clear"><CheckCircle2 size={15} /> You're all caught up for today.</p>}</section>
         <section className="surface-panel consistency-panel"><PanelTitle title="Your rhythm" trailing="Progress" href="/analytics" /><Heatmap sessions={data.sessions} today={today} compact /><div className="consistency-foot"><span><b>{stats.totalDays}</b> study days</span><span><i className="legend-dot solved-dot" /> Less <HeatScale /> More</span></div></section>
         <div className="side-quote"><Sparkles size={15} /><span>“Every expert was once a beginner.”<small>Keep showing up.</small></span></div>
       </aside>
@@ -314,7 +314,7 @@ function ProblemsPage({ data, updateProblem, onEdit, onAdd }: { data: JourneyDat
 
 function RevisionPage({ data, today, setRevisionProblem }: { data: JourneyData | null; today: string; setRevisionProblem: (problem: DsaProblem) => void }) {
   if (!data) return null;
-  const revisions = data.problems.filter((problem) => problem.nextRevisionAt).sort((a, b) => a.nextRevisionAt.localeCompare(b.nextRevisionAt));
+  const revisions = data.problems.filter((problem) => problem.status === "Needs Revision" && problem.nextRevisionAt).sort((a, b) => a.nextRevisionAt.localeCompare(b.nextRevisionAt));
   const overdue = revisions.filter((problem) => problem.nextRevisionAt < today);
   const due = revisions.filter((problem) => problem.nextRevisionAt === today);
   const upcoming = revisions.filter((problem) => problem.nextRevisionAt > today);
