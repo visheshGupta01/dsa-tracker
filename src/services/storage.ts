@@ -1,4 +1,4 @@
-import { roadmap, problemIdFor, type Confidence, type DailyTask, type DsaProblem, type JourneyData, type ProblemStatus, type StudySession } from "@/data/roadmap";
+import { roadmap, type Confidence, type DailyTask, type DsaProblem, type JourneyData, type ProblemStatus, type StudySession } from "@/data/roadmap";
 
 const STORAGE_KEY = "dsa-journey:v1";
 const BACKUP_VERSION = 1;
