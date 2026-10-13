@@ -66,7 +66,8 @@ export function createProblem(input: Partial<DsaProblem> & Pick<DsaProblem, "tit
     timeComplexity: input.timeComplexity ?? "", spaceComplexity: input.spaceComplexity ?? "", notes: input.notes ?? "",
     solvedAt: input.solvedAt ?? "", lastRevisedAt: input.lastRevisedAt ?? "", nextRevisionAt: input.nextRevisionAt ?? "",
     confidence: input.confidence ?? "needed-thinking", platform: input.platform, tier: input.tier,
-    videoUrl: input.videoUrl, alternateUrls: input.alternateUrls, isPersonal: input.isPersonal,
+    videoUrl: input.videoUrl, alternateUrls: input.alternateUrls,
+    isPersonal: input.isPersonal ?? (input.id ? input.id.startsWith("custom-") : true),
   };
 }
 
