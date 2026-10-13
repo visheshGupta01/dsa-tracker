@@ -1,24 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { DsaJourney } from "@/components/dsa-journey";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({ meta: [
+    { title: "Dashboard · DSA Journey" },
+    { name: "description", content: "Your daily Striver A2Z study plan, DSA progress, revisions, and streak at a glance." },
+    { property: "og:title", content: "Dashboard · DSA Journey" },
+    { property: "og:description", content: "A personal dashboard for your Striver A2Z and C++ learning journey." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
+  component: () => <DsaJourney section="Dashboard" />,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
