@@ -106,7 +106,7 @@ export function DsaJourney({ section }: { section: Section }) {
   const finishRevision = (confidence: Confidence) => {
     if (!revisionProblem) return;
     const nextRevisionAt = revisionDate(today, confidence);
-    updateProblem(revisionProblem.id, { confidence, status: "Solved", lastRevisedAt: today, nextRevisionAt, attempts: revisionProblem.attempts + 1 });
+    updateProblem(revisionProblem.id, { confidence, status: "Needs Revision", lastRevisedAt: today, nextRevisionAt, attempts: revisionProblem.attempts + 1 });
     setData((current) => {
       if (!current) return current;
       const daySession = current.sessions.find((session) => session.date === today);
