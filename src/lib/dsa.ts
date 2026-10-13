@@ -1,7 +1,7 @@
 import { roadmap, type Confidence, type DsaProblem, type JourneyData, type StudySession } from "@/data/roadmap";
 import { localDate } from "@/services/storage";
 
-export const completedStatuses = new Set(["Solved", "Mastered", "Revise"]);
+export const completedStatuses = new Set(["Solved", "Mastered", "Revise", "Needs Revision"]);
 
 export function topicStats(problems: DsaProblem[]) {
   return roadmap.map((topic) => {
