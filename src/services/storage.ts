@@ -60,20 +60,23 @@ export function revisionDate(date: string, confidence: Confidence): string {
 export function createProblem(input: Partial<DsaProblem> & Pick<DsaProblem, "title" | "topic" | "difficulty">): DsaProblem {
   return {
     id: input.id ?? `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
-    title: input.title, topic: input.topic, subtopic: input.subtopic, difficulty: input.difficulty, status: input.status ?? "Not Started",
+    title: input.title, topic: input.topic, ...(input.subtopic !== undefined ? { subtopic: input.subtopic } : {}), difficulty: input.difficulty, status: input.status ?? "Not Started",
     problemUrl: input.problemUrl ?? "", solutionUrl: input.solutionUrl ?? "", attempts: input.attempts ?? 0,
     solvedWithoutHelp: input.solvedWithoutHelp ?? false, approach: input.approach ?? "",
     timeComplexity: input.timeComplexity ?? "", spaceComplexity: input.spaceComplexity ?? "", notes: input.notes ?? "",
     solvedAt: input.solvedAt ?? "", lastRevisedAt: input.lastRevisedAt ?? "", nextRevisionAt: input.nextRevisionAt ?? "",
-    confidence: input.confidence ?? "needed-thinking", platform: input.platform, tier: input.tier,
-    videoUrl: input.videoUrl, alternateUrls: input.alternateUrls,
+    confidence: input.confidence ?? "needed-thinking",
+    ...(input.platform !== undefined ? { platform: input.platform } : {}),
+    ...(input.tier !== undefined ? { tier: input.tier } : {}),
+    ...(input.videoUrl !== undefined ? { videoUrl: input.videoUrl } : {}),
+    ...(input.alternateUrls !== undefined ? { alternateUrls: input.alternateUrls } : {}),
     isPersonal: input.isPersonal ?? (input.id ? input.id.startsWith("custom-") : true),
   };
 }
 
-const findSheetProblemId = (moduleTitle: string, title: string) => {
+const findSheetProblemId = (moduleTitle: string, title: string): string => {
   const module = roadmap.find((topic) => topic.title === moduleTitle);
-  return module?.problems.find((problem) => problem.title === title)?.id;
+  return module?.problems.find((problem) => problem.title === title)?.id ?? "";
 };
 
 const defaultTasks = (): DailyTask[] => [
@@ -210,20 +213,20 @@ export function reconcileJourney(input: JourneyData): JourneyData {
       id: canonical.id,
       title: canonical.title,
       topic: canonical.topic,
-      subtopic: canonical.subtopic,
+      ...(canonical.subtopic !== undefined ? { subtopic: canonical.subtopic } : {}),
       difficulty: canonical.difficulty,
       problemUrl: canonical.problemUrl || match.problemUrl,
       solutionUrl: match.solutionUrl || canonical.solutionUrl,
-      platform: canonical.platform,
-      tier: canonical.tier,
-      videoUrl: canonical.videoUrl,
-      alternateUrls: canonical.alternateUrls,
+      ...(canonical.platform !== undefined ? { platform: canonical.platform } : {}),
+      ...(canonical.tier !== undefined ? { tier: canonical.tier } : {}),
+      ...(canonical.videoUrl !== undefined ? { videoUrl: canonical.videoUrl } : {}),
+      ...(canonical.alternateUrls !== undefined ? { alternateUrls: canonical.alternateUrls } : {}),
       isPersonal: false,
     };
   });
   const personalProblems = oldProblems.filter((problem) => !used.has(problem.id) && hasUserWork(problem)).map((problem) => ({ ...problem, isPersonal: true }));
   const remapId = (id: string) => idMap.get(id) ?? id;
-  const dailyTasks = Object.fromEntries(Object.entries(data.dailyTasks).map(([date, tasks]) => [date, tasks.map((task) => ({ ...task, problemId: task.problemId ? remapId(task.problemId) : undefined }))]));
+  const dailyTasks = Object.fromEntries(Object.entries(data.dailyTasks).map(([date, tasks]) => [date, tasks.map((task) => ({ ...task, ...(task.problemId ? { problemId: remapId(task.problemId) } : {}) }))]));
   const sessions = data.sessions.map((session) => ({
     ...session,
     problemsSolved: session.problemsSolved.map(remapId),
