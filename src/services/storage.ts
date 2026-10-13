@@ -49,7 +49,7 @@ export function createStarterData(now = new Date()): JourneyData {
   setStatus("arrays", "Two Sum", "Solved");
   setStatus("arrays", "Kadane's Algorithm", "Learning");
   setStatus("arrays", "Sort Colors", "Revise");
-  setStatus("binary-search", "Binary Search", "Learning");
+  setStatus("binary-search", "Binary Search", "Solved");
 
   const problems = roadmap.flatMap((topic) => topic.problems.map((entry) => {
     const id = problemIdFor(topic, entry.title);
@@ -75,7 +75,7 @@ export function createStarterData(now = new Date()): JourneyData {
     problemsSolved: index < 8 ? [problems[(index + 6) % problems.length]?.id ?? ""] : [],
     problemsRevised: index % 3 === 0 ? [problems.find((problem) => problem.title === "Two Sum")?.id ?? ""] : [], completed: true,
   }));
-  for (let daysAgo = 4; daysAgo >= 1; daysAgo -= 1) {
+  for (let daysAgo = 4; daysAgo >= 4; daysAgo -= 1) {
     sessions.push({ id: `recent-session-${daysAgo}`, date: addDays(today, -daysAgo), learningMinutes: 20, practiceMinutes: 30,
       revisionMinutes: 10, tasks: ["Reviewed a concept", "Solved a practice problem"], problemsSolved: [], problemsRevised: [], completed: true });
   }
