@@ -16,22 +16,18 @@ import { activityByDay, completedStatuses, solveConfidenceDelay, solvedCount, st
 import { createStarterData, localDate, minutesForDay, readJourney, resetJourney, revisionDate, tasksForDay, writeJourney } from "@/services/storage";
 import { roadmap, type Confidence, type DailyTask, type Difficulty, type DsaProblem, type JourneyData, type ProblemStatus } from "@/data/roadmap";
 
-type Section = "Dashboard" | "Roadmap" | "Problems" | "Revision" | "Analytics";
+type Section = "Dashboard" | "DSA Sheet" | "Progress";
 const sectionMeta: Record<Section, { title: string; eyebrow: string; description: string }> = {
   Dashboard: { title: "Your next hour, well spent.", eyebrow: "YOUR STUDY SPACE", description: "One focused session at a time. Pick up where you left off." },
-  Roadmap: { title: "The bigger picture.", eyebrow: "YOUR ROADMAP", description: "Seventeen steps from the fundamentals to advanced algorithms." },
-  Problems: { title: "Every problem, in one place.", eyebrow: "PROBLEM TRACKER", description: "Find your next challenge, update a status, or revisit a solution." },
-  Revision: { title: "Make it stick.", eyebrow: "SPACED REPETITION", description: "Come back to the problems you have already worked through." },
-  Analytics: { title: "Small steps add up.", eyebrow: "YOUR PROGRESS", description: "A clear picture of your practice and consistency over time." },
+  "DSA Sheet": { title: "Your sheet, one problem at a time.", eyebrow: "STRIVER A2Z", description: "Track solved problems and mark the ones you want to revisit." },
+  Progress: { title: "Small steps add up.", eyebrow: "YOUR PROGRESS", description: "A clear picture of your practice and consistency over time." },
 };
-const navItems: Array<{ name: Section; href: "/" | "/roadmap" | "/problems" | "/revision" | "/analytics"; icon: typeof LayoutDashboard }> = [
+const navItems: Array<{ name: Section; href: "/" | "/roadmap" | "/analytics"; icon: typeof LayoutDashboard }> = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Roadmap", href: "/roadmap", icon: BookOpen },
-  { name: "Problems", href: "/problems", icon: Code2 },
-  { name: "Revision", href: "/revision", icon: RotateCcw },
-  { name: "Analytics", href: "/analytics", icon: Activity },
+  { name: "DSA Sheet", href: "/roadmap", icon: BookOpen },
+  { name: "Progress", href: "/analytics", icon: Activity },
 ];
-const statusOptions: ProblemStatus[] = ["Not Started", "Learning", "Solved", "Revise", "Mastered"];
+const statusOptions: ProblemStatus[] = ["Not Started", "Solved", "Needs Revision"];
 const difficultyOptions: Difficulty[] = ["Easy", "Medium", "Hard"];
 const confidenceChoices: Array<{ id: Confidence; emoji: string; title: string; days: number }> = [
   { id: "easy", emoji: "😄", title: "Easy", days: 7 },
@@ -137,14 +133,12 @@ export function DsaJourney({ section }: { section: Section }) {
 
         <main className="content-area page-enter">
           <div className="page-heading"><div><span className="eyebrow"><i />{sectionMeta[section].eyebrow}</span><h1>{sectionMeta[section].title}</h1><p>{sectionMeta[section].description}</p></div>
-            {section === "Problems" && <Button onClick={() => openProblem()}><Plus size={16} /> Add problem</Button>}
+            {section === "DSA Sheet" && <Button onClick={() => openProblem()}><Plus size={16} /> Add problem</Button>}
           </div>
           {!data ? <LoadingState /> : <>
             {section === "Dashboard" && <DashboardPage {...common} onFinish={(change) => setData((previous) => previous ? change(previous) : previous)} />}
-            {section === "Roadmap" && <RoadmapPage {...common} />}
-            {section === "Problems" && <ProblemsPage {...common} onEdit={openProblem} onAdd={() => openProblem()} />}
-            {section === "Revision" && <RevisionPage {...common} />}
-            {section === "Analytics" && <AnalyticsPage {...common} />}
+            {section === "DSA Sheet" && <ProblemsPage {...common} onEdit={openProblem} onAdd={() => openProblem()} />}
+            {section === "Progress" && <AnalyticsPage {...common} />}
           </>}
         </main>
       </div>
@@ -170,7 +164,7 @@ function ProgressBar({ value, className = "" }: { value: number; className?: str
   return <div className={cn("progress-track", className)} role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} aria-label="Completion"><span style={{ width: `${value}%` }} /></div>;
 }
 
-function PanelTitle({ title, trailing, href }: { title: string; trailing?: string; href?: "/roadmap" | "/problems" | "/revision" | "/analytics" }) {
+function PanelTitle({ title, trailing, href }: { title: string; trailing?: string; href?: "/roadmap" | "/analytics" }) {
   return <div className="panel-title"><h2>{title}</h2>{trailing && (href ? <Link to={href} className="text-link">{trailing}<ArrowRight size={14} /></Link> : <span className="panel-meta">{trailing}</span>)}</div>;
 }
 
@@ -221,7 +215,7 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
 
     <div className="dashboard-grid">
       <div className="dashboard-column">
-        <section className="surface-panel overall-panel"><PanelTitle title="Overall progress" trailing="View roadmap" href="/roadmap" /><div className="overall-row"><div><strong>{progress}%</strong><span>of your A2Z problems solved</span></div><span className="overall-count"><b>{solved}</b><i>/</i>{total}</span></div><ProgressBar value={progress} /><div className="overall-footer"><span><i className="legend-dot solved-dot" /> Solved</span><span><i className="legend-dot remaining-dot" /> Remaining</span><span className="overall-streak"><Flame size={13} /> {stats.current} day streak</span></div></section>
+        <section className="surface-panel overall-panel"><PanelTitle title="Overall progress" trailing="Open DSA Sheet" href="/roadmap" /><div className="overall-row"><div><strong>{progress}%</strong><span>of your A2Z problems solved</span></div><span className="overall-count"><b>{solved}</b><i>/</i>{total}</span></div><ProgressBar value={progress} /><div className="overall-footer"><span><i className="legend-dot solved-dot" /> Solved</span><span><i className="legend-dot remaining-dot" /> Remaining</span><span className="overall-streak"><Flame size={13} /> {stats.current} day streak</span></div></section>
 
         <section className="surface-panel today-panel"><div className="today-header"><div><span className="eyebrow"><i /> TODAY'S PLAN</span><h2>A focused hour</h2><p>{new Date(`${today}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p></div><div className="session-clock"><Clock3 size={13} /><span>{minutes.learning + minutes.practice + minutes.revision} min</span></div></div>
           <div className="minutes-editor" aria-label="Planned minutes"><span>Plan</span>{(["learning", "practice", "revision"] as const).map((key) => <label key={key}>{key === "learning" ? "Learn" : key === "practice" ? "Practice" : "Revision"}<input type="number" min="0" max="240" step="5" aria-label={`${key} minutes`} value={minutes[key]} disabled={completed} onChange={(event) => setMinutes(key, Number(event.target.value))} /></label>)}</div>
@@ -232,13 +226,13 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
           <p className="session-note"><CheckCircle2 size={13} /> Your session is saved once per calendar day.</p>
         </section>
 
-        <section className="surface-panel recent-panel"><PanelTitle title="Recently solved" trailing="All problems" href="/problems" />{recent.length ? <div className="recent-list">{recent.map((problem) => <button key={problem.id} className="recent-row" onClick={() => openProblem(problem)}><span className="recent-status"><Check size={13} /></span><span className="recent-name"><b>{problem.title}</b><small>{topicLabel(problem.topic)}</small></span><DifficultyBadge difficulty={problem.difficulty} /><span className="recent-date">{titleCaseDate(problem.solvedAt)}</span><ArrowRight size={14} className="recent-arrow" /></button>)}</div> : <EmptyState title="Your first solve is waiting" message="Check off a practice problem in today's plan to add it here." />}</section>
+        <section className="surface-panel recent-panel"><PanelTitle title="Recently solved" trailing="Open DSA Sheet" href="/roadmap" />{recent.length ? <div className="recent-list">{recent.map((problem) => <button key={problem.id} className="recent-row" onClick={() => openProblem(problem)}><span className="recent-status"><Check size={13} /></span><span className="recent-name"><b>{problem.title}</b><small>{topicLabel(problem.topic)}</small></span><DifficultyBadge difficulty={problem.difficulty} /><span className="recent-date">{titleCaseDate(problem.solvedAt)}</span><ArrowRight size={14} className="recent-arrow" /></button>)}</div> : <EmptyState title="Your first solve is waiting" message="Check off a practice problem in today's plan to add it here." />}</section>
       </div>
 
       <aside className="dashboard-column side-column">
         <section className="surface-panel continue-panel"><div className="continue-heading"><div><span className="eyebrow"><i /> PICK UP WHERE YOU LEFT OFF</span><h2>{currentTopic?.title ?? "Binary Search"}</h2></div><span className="continue-symbol"><ArrowDownUp size={17} /></span></div><p className="continue-subtitle">The next step in your A2Z journey</p><div className="continue-progress-label"><span>{currentTopic?.done ?? 0} of {currentTopic?.total ?? 0} problems</span><b>{currentTopic?.percent ?? 0}%</b></div><ProgressBar value={currentTopic?.percent ?? 0} /><Link to="/roadmap" className="continue-link">Continue learning <ArrowRight size={15} /></Link></section>
         <section className="surface-panel revision-preview"><PanelTitle title="Up next to revise" trailing={`${due} due`} href="/revision" />{data.problems.filter((problem) => problem.nextRevisionAt && problem.nextRevisionAt <= today).slice(0, 2).map((problem) => <div className="revision-mini" key={problem.id}><span className="revision-mini-icon"><RotateCcw size={14} /></span><div><b>{problem.title}</b><small>{problem.nextRevisionAt < today ? "Overdue" : "Due today"} · {problem.topic}</small></div><button aria-label={`Revise ${problem.title}`} onClick={() => setRevisionProblem(problem)}><ArrowRight size={14} /></button></div>)}{due === 0 && <p className="all-clear"><CheckCircle2 size={15} /> You're all caught up for today.</p>}</section>
-        <section className="surface-panel consistency-panel"><PanelTitle title="Your rhythm" trailing="Analytics" href="/analytics" /><Heatmap sessions={data.sessions} today={today} compact /><div className="consistency-foot"><span><b>{stats.totalDays}</b> study days</span><span><i className="legend-dot solved-dot" /> Less <HeatScale /> More</span></div></section>
+        <section className="surface-panel consistency-panel"><PanelTitle title="Your rhythm" trailing="Progress" href="/analytics" /><Heatmap sessions={data.sessions} today={today} compact /><div className="consistency-foot"><span><b>{stats.totalDays}</b> study days</span><span><i className="legend-dot solved-dot" /> Less <HeatScale /> More</span></div></section>
         <div className="side-quote"><Sparkles size={15} /><span>“Every expert was once a beginner.”<small>Keep showing up.</small></span></div>
       </aside>
     </div>
@@ -250,7 +244,7 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 }
 
 function StatusBadge({ status }: { status: ProblemStatus }) {
-  const icons: Record<ProblemStatus, typeof Circle> = { "Not Started": Circle, Learning: Activity, Solved: CheckCircle2, Revise: RotateCcw, Mastered: Trophy };
+  const icons: Record<ProblemStatus, typeof Circle> = { "Not Started": Circle, Learning: Activity, Solved: CheckCircle2, Revise: RotateCcw, Mastered: Trophy, "Needs Revision": RotateCcw };
   const Icon = icons[status];
   return <span className={cn("status-badge", `status-${status.toLowerCase().replace(" ", "-")}`)}><Icon size={12} />{status}</span>;
 }
@@ -281,10 +275,11 @@ function ProblemsPage({ data, updateProblem, onEdit, onAdd }: { data: JourneyDat
   const filtered = data.problems.filter((problem) => `${problem.title} ${problem.topic}`.toLowerCase().includes(query.toLowerCase()) && (topic === "All topics" || problem.topic === topic) && (difficulty === "All difficulties" || problem.difficulty === difficulty) && (status === "All statuses" || problem.status === status)).sort((a, b) => sort === "title" ? a.title.localeCompare(b.title) : sort === "difficulty" ? difficultyOptions.indexOf(a.difficulty) - difficultyOptions.indexOf(b.difficulty) : roadmap.findIndex((entry) => entry.title === a.topic) - roadmap.findIndex((entry) => entry.title === b.topic));
   const onStatus = (id: string, next: ProblemStatus) => {
     const item = data.problems.find((problem) => problem.id === id);
-    updateProblem(id, { status: next, solvedAt: next === "Solved" || next === "Mastered" ? item?.solvedAt || localDate() : item?.solvedAt || "" });
+    const status = next === "Learning" || next === "Mastered" ? (next === "Mastered" ? "Solved" : "Not Started") : next === "Revise" ? "Needs Revision" : next;
+    updateProblem(id, { status, solvedAt: status === "Solved" ? item?.solvedAt || localDate() : item?.solvedAt || "" });
   };
   return <>
-    <div className="problem-overview"><div><strong>{data.problems.length}</strong><span>Total problems</span></div><div><strong>{solvedCount(data)}</strong><span>Solved</span></div><div><strong>{data.problems.filter((problem) => problem.status === "Learning").length}</strong><span>In progress</span></div><div><strong>{data.problems.filter((problem) => problem.nextRevisionAt && problem.nextRevisionAt <= localDate()).length}</strong><span>To revise</span></div></div>
+    <div className="problem-overview"><div><strong>{data.problems.length}</strong><span>Total problems</span></div><div><strong>{solvedCount(data)}</strong><span>Solved</span></div><div><strong>{data.problems.filter((problem) => problem.status === "Not Started").length}</strong><span>Not started</span></div><div><strong>{data.problems.filter((problem) => problem.nextRevisionAt && problem.nextRevisionAt <= localDate()).length}</strong><span>To revise</span></div></div>
     <section className="surface-panel problem-table-panel"><div className="problem-toolbar"><div className="search-field"><Search size={16} /><Input aria-label="Search problems" placeholder="Search by problem or topic…" value={query} onChange={(event) => setQuery(event.target.value)} /><kbd>/</kbd></div><div className="filter-controls"><select aria-label="Filter by topic" value={topic} onChange={(event) => setTopic(event.target.value)}><option>All topics</option>{topics.map((item) => <option key={item}>{item}</option>)}</select><select aria-label="Filter by difficulty" value={difficulty} onChange={(event) => setDifficulty(event.target.value)}><option>All difficulties</option>{difficultyOptions.map((item) => <option key={item}>{item}</option>)}</select><select aria-label="Filter by status" value={status} onChange={(event) => setStatus(event.target.value)}><option>All statuses</option>{statusOptions.map((item) => <option key={item}>{item}</option>)}</select><select aria-label="Sort problems" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="default">Roadmap order</option><option value="title">Name A–Z</option><option value="difficulty">Difficulty</option></select></div></div>
       <div className="problem-table-scroll"><table className="problem-table"><thead><tr><th>PROBLEM</th><th>TOPIC</th><th>DIFFICULTY</th><th>STATUS</th><th>ATTEMPTS</th><th>LAST SOLVED</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{filtered.map((problem) => <tr key={problem.id}><td><button className="table-problem-name" onClick={() => onEdit(problem)}>{problem.title}</button></td><td><span className="topic-pill">{topicLabel(problem.topic)}</span></td><td><DifficultyBadge difficulty={problem.difficulty} /></td><td><select aria-label={`Status for ${problem.title}`} className={cn("table-status-select", `status-select-${problem.status.toLowerCase().replace(" ", "-")}`)} value={problem.status} onChange={(event) => onStatus(problem.id, event.target.value as ProblemStatus)}>{statusOptions.map((item) => <option key={item}>{item}</option>)}</select></td><td className="attempt-count">{problem.attempts || "—"}</td><td className="solved-date">{problem.solvedAt ? titleCaseDate(problem.solvedAt) : "—"}</td><td><button className="row-action" aria-label={`Edit ${problem.title}`} onClick={() => onEdit(problem)}><ArrowRight size={15} /></button></td></tr>)}</tbody></table></div>
       {filtered.length === 0 && <EmptyState title="No problems match" message="Try another search or filter, or add a problem to your list." />}
@@ -371,8 +366,9 @@ function ProblemEditor({ open, problem, onOpenChange, onSave }: { open: boolean;
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!form.title?.trim() || !form.topic?.trim()) { toast.error("Add a problem name and topic first"); return; }
-    const status = form.status ?? "Not Started";
-    const solvedAt = status === "Solved" || status === "Mastered" ? form.solvedAt || localDate() : form.solvedAt || "";
+    const rawStatus = form.status ?? "Not Started";
+    const status = rawStatus === "Learning" || rawStatus === "Mastered" ? (rawStatus === "Mastered" ? "Solved" : "Not Started") : rawStatus === "Revise" ? "Needs Revision" : rawStatus;
+    const solvedAt = status === "Solved" ? form.solvedAt || localDate() : form.solvedAt || "";
     const confidence = form.confidence ?? "needed-thinking";
     onSave({ ...createEditorDefaults, ...form, id: form.id || `custom-${Date.now().toString(36)}`, title: form.title.trim(), topic: form.topic.trim(), difficulty: form.difficulty ?? "Easy", status, confidence, solvedAt, nextRevisionAt: form.nextRevisionAt || (solvedAt ? revisionDate(solvedAt, confidence) : "") } as DsaProblem);
   };
