@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { activityByDay, completedStatuses, solveConfidenceDelay, solvedCount, streakStats, topicLabel, topicStats } from "@/lib/dsa";
-import { createStarterData, exportJourney, importJourney, localDate, minutesForDay, readJourney, resetJourney, revisionDate, tasksForDay, writeJourney } from "@/services/storage";
+import { createStarterData, exportJourney, importJourney, localDate, minutesForDay, normaliseJourney, readJourney, resetJourney, revisionDate, tasksForDay, writeJourney } from "@/services/storage";
 import { roadmap, type Confidence, type DailyTask, type Difficulty, type DsaProblem, type JourneyData, type ProblemStatus } from "@/data/roadmap";
 
 type Section = "Dashboard" | "DSA Sheet" | "Progress";
@@ -47,7 +47,7 @@ export function DsaJourney({ section }: { section: Section }) {
 
   useEffect(() => {
     const stored = readJourney();
-    setData(stored ?? createStarterData());
+    setData(stored ?? normaliseJourney(createStarterData()));
     setToday(localDate());
   }, []);
 
@@ -100,7 +100,7 @@ export function DsaJourney({ section }: { section: Section }) {
   const handleReset = () => {
     if (!window.confirm("Reset your tracker and restore the sample problems? Your saved changes will be removed.")) return;
     resetJourney();
-    setData(createStarterData());
+    setData(normaliseJourney(createStarterData()));
     toast.success("Sample journey restored");
   };
   const finishRevision = (confidence: Confidence) => {
