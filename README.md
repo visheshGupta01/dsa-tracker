@@ -1,17 +1,25 @@
 # DSA Journey
 
-A personal, local-first tracker for studying Data Structures & Algorithms in C++ with Striver's A2Z Sheet. Keep your next steps visible, track problem status, revisit problems that need work, and see your consistency over time.
+A personal, local-first tracker for studying Data Structures & Algorithms in C++ with Striver's A2Z practice sheet. Keep your next steps visible, track problem status, revisit problems that need work, and see your consistency over time.
 
 ## Features
 
 - **Dashboard** — daily focus, streak, overall completion, and revision reminders.
-- **DSA Sheet** — search and filter problems by topic, difficulty, and status.
-- **Progress** — study-time, solved-problem trends, and topic completion analytics.
+- **DSA Sheet** — 402 practice-problem entries grouped across 20 modules, with search, topic/difficulty/status filters, and direct practice links.
+- **Progress** — study-time, solved-problem trends, and module completion analytics.
 - **Simple statuses** — Not Started, Solved, and Needs Revision.
 - **Private by default** — progress is stored in this browser with `localStorage`; there is no account or backend.
 - **JSON backup/restore** — export progress or import it on another browser/device.
+- **Official practice resources** — links to TakeUForward, LeetCode, and GeeksforGeeks where available; optional editorial/video links are shown when present.
 
-> **Roadmap note:** the bundled topic/problem list is a starter subset inspired by Striver's A2Z roadmap, not a verified complete copy of the official sheet. Review the data before treating it as exhaustive.
+## About the sheet data
+
+The problem index is derived from TakeUForward's Striver A2Z sheet, using a dated **20 September 2026** snapshot of problem titles, order, module grouping, and primary practice links. The 402 entries are practice problems, not every theory/learning item counted on the current Prep Hub page. The app groups the 10 basic/medium string problems into the separate **Strings (Basic and Medium)** module to match the current 20-module syllabus.
+
+- Official sheet: https://takeuforward.org/prep-hub/strivers-a2z-dsa-sheet
+- Source snapshot and link-validation notes: https://github.com/geckguy/striver-a2z-sheet
+- Difficulty is not published for every entry; those are shown as **Unrated**, rather than guessing a difficulty.
+- This is a local tracker, not an official TakeUForward product. The official sheet may change, so use the links above to verify the latest curriculum.
 
 ## Tech stack
 
@@ -42,4 +50,4 @@ Import the repository into Vercel and use the detected build settings. Progress 
 
 ## Portfolio / LinkedIn
 
-Built DSA Journey, a responsive C++ practice tracker inspired by Striver's A2Z sheet, with daily study tracking, revision statuses, local-first persistence, JSON backups, and progress analytics.
+Built DSA Journey, a responsive C++ practice tracker for Striver's A2Z sheet, with 402 linked practice problems, module-wise progress, revision statuses, local-first persistence, JSON backup/restore, and progress analytics.
