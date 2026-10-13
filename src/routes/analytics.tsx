@@ -6,5 +6,5 @@ export const Route = createFileRoute("/analytics")({
     { title: "Progress · DSA Journey" }, { name: "description", content: "See your DSA practice trends, study consistency, and roadmap completion." },
     { property: "og:title", content: "Progress · DSA Journey" }, { property: "og:description", content: "Study time, problem trends, topic progress, and DSA activity." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
-  ] }), component: () => <DsaJourney section="Analytics" />,
+  ] }), component: () => <DsaJourney section="Progress" />,
 });
