@@ -18,7 +18,7 @@ export interface SheetProblem {
   difficulty: Difficulty;
   platform: string;
   url: string;
-  altUrls: SheetAlternative[];
+  altUrls: readonly SheetAlternative[];
   articleUrl: string;
   videoUrl: string;
   premium: boolean;
@@ -54,7 +54,7 @@ export interface DsaProblem {
   platform?: string;
   tier?: string;
   videoUrl?: string;
-  alternateUrls?: SheetAlternative[];
+  alternateUrls?: readonly SheetAlternative[];
   isPersonal?: boolean;
 }
 
