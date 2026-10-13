@@ -374,3 +374,12 @@ a.table-problem-name, a.roadmap-problem-name { text-decoration: none; }
 .roadmap-leetcode-link { padding: 3px 4px; font-size: 8px; }
 @media (max-width: 600px) { .problem-title-cell { gap: 5px; } .problem-title-cell .problem-secondary-link { font-size: 7px; padding: 3px 4px; } .roadmap-leetcode-link { padding: 2px 3px; } }
 
+/* Keep problem resource actions readable and button-like in the editor. */
+.problem-external-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.problem-external-links a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; width: fit-content; max-width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--foreground); font-size: 10px; line-height: 1.3; text-decoration: none; white-space: normal; overflow-wrap: anywhere; transition: border-color .15s ease, background-color .15s ease, color .15s ease; }
+.problem-external-links a svg { flex: none; }
+.problem-external-links a:hover { border-color: var(--accent); background: var(--accent); color: var(--acid); }
+.problem-title-cell { flex-wrap: wrap; }
+.problem-title-cell .problem-secondary-link { align-items: center; justify-content: center; }
+@media (max-width: 600px) { .problem-external-links { gap: 6px; } .problem-external-links a { min-height: 32px; padding: 6px 8px; font-size: 9px; } }
+
