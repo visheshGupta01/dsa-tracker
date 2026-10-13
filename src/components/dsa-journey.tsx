@@ -89,9 +89,12 @@ export function DsaJourney({ section }: { section: Section }) {
     updateProblem(revisionProblem.id, { confidence, status: "Solved", lastRevisedAt: today, nextRevisionAt, attempts: revisionProblem.attempts + 1 });
     setData((current) => {
       if (!current) return current;
-      const already = current.sessions.some((session) => session.date === today && session.completed);
-      const revised = current.sessions.map((session) => session.date === today ? { ...session, problemsRevised: [...new Set([...session.problemsRevised, revisionProblem.id])] } : session);
-      return { ...current, sessions: already ? revised : [...revised, { id: `revision-${today}`, date: today, learningMinutes: 0, practiceMinutes: 0, revisionMinutes: 10, tasks: ["Completed a revision"], problemsSolved: [], problemsRevised: [revisionProblem.id], completed: true }] };
+      const daySession = current.sessions.find((session) => session.date === today);
+      const revisedSession = { id: daySession?.id ?? `session-${today}`, date: today, learningMinutes: daySession?.learningMinutes ?? 0,
+        practiceMinutes: daySession?.practiceMinutes ?? 0, revisionMinutes: Math.max(daySession?.revisionMinutes ?? 0, 10),
+        tasks: [...new Set([...(daySession?.tasks ?? []), "Completed a revision"])], problemsSolved: daySession?.problemsSolved ?? [],
+        problemsRevised: [...new Set([...(daySession?.problemsRevised ?? []), revisionProblem.id])], completed: daySession?.completed ?? false };
+      return { ...current, sessions: daySession ? current.sessions.map((session) => session.date === today ? revisedSession : session) : [...current.sessions, revisedSession] };
     });
     toast.success(`Next revision ${titleCaseDate(nextRevisionAt)}`);
     setRevisionProblem(null);
@@ -183,7 +186,7 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
   const progress = total ? Math.round(solved / total * 100) : 0;
   const minutes = minutesForDay(data, today);
   const allTasks = data.dailyTasks[today] ?? tasksForDay(data, today);
-  const todaySession = data.sessions.find((session) => session.date === today && session.completed);
+  const todaySession = data.sessions.find((session) => session.date === today);
   const completed = todaySession !== undefined;
   const currentTopic = topics.find((topic) => topic.title === "Binary Search");
   const due = data.problems.filter((problem) => problem.nextRevisionAt && problem.nextRevisionAt <= today).length;
@@ -195,10 +198,13 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
     const solvedIds = allTasks.filter((task) => task.completed && task.type === "Practice" && task.problemId).map((task) => task.problemId as string);
     const revisedIds = allTasks.filter((task) => task.completed && task.type === "Revision" && task.problemId).map((task) => task.problemId as string);
     onFinish((previous) => {
-      if (previous.sessions.some((session) => session.date === today && session.completed)) return previous;
-      const session = { id: `session-${today}`, date: today, learningMinutes: minutes.learning, practiceMinutes: minutes.practice, revisionMinutes: minutes.revision,
-        tasks: allTasks.filter((task) => task.completed).map((task) => task.title), problemsSolved: solvedIds, problemsRevised: revisedIds, completed: true };
-      return { ...previous, problems: previous.problems.map((problem) => solvedIds.includes(problem.id) ? { ...problem, status: "Solved", attempts: Math.max(1, problem.attempts), solvedAt: today } : revisedIds.includes(problem.id) ? { ...problem, status: "Solved", lastRevisedAt: today } : problem), sessions: [...previous.sessions, session] };
+      const existing = previous.sessions.find((session) => session.date === today);
+      if (existing?.completed) return previous;
+      const session = { id: existing?.id ?? `session-${today}`, date: today, learningMinutes: minutes.learning, practiceMinutes: minutes.practice, revisionMinutes: minutes.revision,
+        tasks: [...new Set([...(existing?.tasks ?? []), ...allTasks.filter((task) => task.completed).map((task) => task.title)])],
+        problemsSolved: [...new Set([...(existing?.problemsSolved ?? []), ...solvedIds])],
+        problemsRevised: [...new Set([...(existing?.problemsRevised ?? []), ...revisedIds])], completed: true };
+      return { ...previous, problems: previous.problems.map((problem) => solvedIds.includes(problem.id) ? { ...problem, status: "Solved", attempts: Math.max(1, problem.attempts), solvedAt: today } : revisedIds.includes(problem.id) ? { ...problem, status: "Solved", lastRevisedAt: today } : problem), sessions: existing ? previous.sessions.map((item) => item.date === today ? session : item) : [...previous.sessions, session] };
     });
     toast.success("Study session saved. Nice work.");
   };
