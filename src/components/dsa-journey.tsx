@@ -17,6 +17,8 @@ import { createStarterData, exportJourney, importJourney, localDate, minutesForD
 import { roadmap, type Confidence, type DailyTask, type Difficulty, type DsaProblem, type JourneyData, type ProblemStatus } from "@/data/roadmap";
 
 type Section = "Dashboard" | "DSA Sheet" | "Progress";
+type VideoStatus = "Not Watched" | "Watched" | "Revisit";
+const COURSE_PLAYLIST_URL = "https://www.youtube.com/playlist?list=PLgUwDviBIf0oF6QL8m22w1hIDC1vJ_BHz";
 const sectionMeta: Record<Section, { title: string; eyebrow: string; description: string }> = {
   Dashboard: { title: "Your next hour, well spent.", eyebrow: "YOUR STUDY SPACE", description: "One focused session at a time. Pick up where you left off." },
   "DSA Sheet": { title: "Your sheet, one problem at a time.", eyebrow: "STRIVER A2Z", description: "Track solved problems and mark the ones you want to revisit." },
@@ -168,7 +170,7 @@ export function DsaJourney({ section }: { section: Section }) {
           </div>
           {!data ? <LoadingState /> : <>
             {section === "Dashboard" && <DashboardPage {...common} onFinish={(change) => setData((previous) => previous ? change(previous) : previous)} />}
-            {section === "DSA Sheet" && <ProblemsPage {...common} onEdit={openProblem} onAdd={() => openProblem()} />}
+            {section === "DSA Sheet" && <ProblemsPage {...common} onEdit={openProblem} onAdd={() => openProblem()} onVideoStatus={(id, status) => setData((current) => current ? { ...current, videoStatuses: { ...(current.videoStatuses ?? {}), [id]: status } } : current)} />}
             {section === "Progress" && <AnalyticsPage {...common} />}
           </>}
         </main>
@@ -262,6 +264,7 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
 
       <aside className="dashboard-column side-column">
         <section className="surface-panel continue-panel"><div className="continue-heading"><div><span className="eyebrow"><i /> PICK UP WHERE YOU LEFT OFF</span><h2>{currentTopic?.title ?? "Binary Search"}</h2></div><span className="continue-symbol"><ArrowDownUp size={17} /></span></div><p className="continue-subtitle">The next step in your A2Z journey</p><div className="continue-progress-label"><span>{currentTopic?.done ?? 0} of {currentTopic?.total ?? 0} problems</span><b>{currentTopic?.percent ?? 0}%</b></div><ProgressBar value={currentTopic?.percent ?? 0} /><Link to="/roadmap" className="continue-link">Continue learning <ArrowRight size={15} /></Link></section>
+        <section className="surface-panel continue-panel video-continue-panel"><div className="continue-heading"><div><span className="eyebrow"><i /> CONTINUE LEARNING</span><h2>Striver videos</h2></div><span className="continue-symbol"><PlayCircle size={17} /></span></div><p className="continue-subtitle">{data.problems.filter((problem) => problem.videoUrl && (data.videoStatuses?.[problem.id] ?? "Not Watched") !== "Watched").length} video resources left to watch</p><a className="continue-link" href={data.problems.find((problem) => problem.videoUrl && (data.videoStatuses?.[problem.id] ?? "Not Watched") !== "Watched")?.videoUrl || COURSE_PLAYLIST_URL} target="_blank" rel="noreferrer">Watch next video <ExternalLink size={14} /></a><Link to="/roadmap" className="video-sheet-link">Track videos in DSA Sheet <ArrowRight size={13} /></Link></section>
         <section className="surface-panel revision-preview"><PanelTitle title="Up next to revise" trailing={`${due} due`} href="/roadmap" />{data.problems.filter((problem) => problem.status === "Needs Revision" && problem.nextRevisionAt && problem.nextRevisionAt <= today).slice(0, 2).map((problem) => <div className="revision-mini" key={problem.id}><span className="revision-mini-icon"><RotateCcw size={14} /></span><div><b>{problem.title}</b><small>{problem.nextRevisionAt < today ? "Overdue" : "Due today"} · {problem.topic}</small></div><button aria-label={`Revise ${problem.title}`} onClick={() => setRevisionProblem(problem)}><ArrowRight size={14} /></button></div>)}{due === 0 && <p className="all-clear"><CheckCircle2 size={15} /> You're all caught up for today.</p>}</section>
         <section className="surface-panel consistency-panel"><PanelTitle title="Your rhythm" trailing="Progress" href="/analytics" /><Heatmap sessions={data.sessions} today={today} compact /><div className="consistency-foot"><span><b>{stats.totalDays}</b> study days</span><span><i className="legend-dot solved-dot" /> Less <HeatScale /> More</span></div></section>
         <div className="side-quote"><Sparkles size={15} /><span>“Every expert was once a beginner.”<small>Keep showing up.</small></span></div>
@@ -297,7 +300,8 @@ function RoadmapPage({ data, today, updateProblem, openProblem }: { data: Journe
   </>;
 }
 
-function ProblemsPage({ data, updateProblem, onEdit, onAdd }: { data: JourneyData | null; updateProblem: (id: string, patch: Partial<DsaProblem>) => void; onEdit: (problem?: DsaProblem) => void; onAdd: () => void }) {
+function ProblemsPage({ data, updateProblem, onEdit, onAdd, onVideoStatus }: { data: JourneyData | null; updateProblem: (id: string, patch: Partial<DsaProblem>) => void; onEdit: (problem?: DsaProblem) => void; onAdd: () => void; onVideoStatus: (id: string, status: VideoStatus) => void }) {
+  const [sheetView, setSheetView] = useState<"problems" | "videos">("problems");
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState("All topics");
   const [difficulty, setDifficulty] = useState("All difficulties");
@@ -311,7 +315,11 @@ function ProblemsPage({ data, updateProblem, onEdit, onAdd }: { data: JourneyDat
     const status = next === "Learning" || next === "Mastered" ? (next === "Mastered" ? "Solved" : "Not Started") : next === "Revise" ? "Needs Revision" : next;
     updateProblem(id, { status, solvedAt: status === "Solved" ? item?.solvedAt || localDate() : item?.solvedAt || "" });
   };
+  const videoCount = data.problems.filter((problem) => Boolean(problem.videoUrl)).length;
+  const watchedCount = data.problems.filter((problem) => problem.videoUrl && data.videoStatuses?.[problem.id] === "Watched").length;
   return <>
+    <div className="sheet-view-tabs" role="tablist" aria-label="DSA sheet view"><button role="tab" aria-selected={sheetView === "problems"} className={cn(sheetView === "problems" && "active")} onClick={() => setSheetView("problems")}><Code2 size={15} /> Problems <span>{data.problems.length}</span></button><button role="tab" aria-selected={sheetView === "videos"} className={cn(sheetView === "videos" && "active")} onClick={() => setSheetView("videos")}><PlayCircle size={15} /> Videos <span>{watchedCount}/{videoCount}</span></button></div>
+    {sheetView === "videos" ? <VideosPage data={data} onVideoStatus={onVideoStatus} /> : <>
     <section className="surface-panel mb-4 flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-foreground"><PlayCircle size={22} /></span>
@@ -332,6 +340,24 @@ function ProblemsPage({ data, updateProblem, onEdit, onAdd }: { data: JourneyDat
       {filtered.length === 0 && <EmptyState title="No problems match" message="Try another search or filter, or add a problem to your list." />}
       <div className="table-footer"><span>Showing <b>{filtered.length}</b> of <b>{data.problems.length}</b> problems</span><Button variant="ghost" size="sm" onClick={onAdd}><Plus size={14} /> Add problem</Button></div>
     </section>
+    </>}
+  </>;
+}
+
+function VideosPage({ data, onVideoStatus }: { data: JourneyData; onVideoStatus: (id: string, status: VideoStatus) => void }) {
+  const lessons = data.problems.filter((problem) => Boolean(problem.videoUrl));
+  const watched = lessons.filter((problem) => data.videoStatuses?.[problem.id] === "Watched").length;
+  const percent = lessons.length ? Math.round(watched / lessons.length * 100) : 0;
+  const [topicFilter, setTopicFilter] = useState("All topics");
+  const [statusFilter, setStatusFilter] = useState("All statuses");
+  const topics = [...new Set(lessons.map((problem) => problem.topic))];
+  const filtered = lessons.filter((problem) => (topicFilter === "All topics" || problem.topic === topicFilter) && (statusFilter === "All statuses" || (data.videoStatuses?.[problem.id] ?? "Not Watched") === statusFilter));
+  return <>
+    <section className="surface-panel video-course-card"><div className="video-course-icon"><PlayCircle size={22} /></div><div className="video-course-copy"><span className="eyebrow"><i /> STRIVER A2Z VIDEO COURSE</span><h2>Watch, track, then practice</h2><p>Track the video resources linked to your A2Z problems separately from your solved status. Your video progress is saved in this browser.</p><div className="video-progress-line"><span><b>{watched}</b> of {lessons.length} watched</span><b>{percent}%</b></div><ProgressBar value={percent} /></div><Button asChild size="sm"><a href={COURSE_PLAYLIST_URL} target="_blank" rel="noreferrer"><PlayCircle size={14} /> Open full playlist <ExternalLink size={13} /></a></Button></section>
+    <div className="video-filters"><label>Topic<select value={topicFilter} onChange={(event) => setTopicFilter(event.target.value)}><option>All topics</option>{topics.map((topic) => <option key={topic}>{topic}</option>)}</select></label><label>Status<select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All statuses</option><option>Not Watched</option><option>Watched</option><option>Revisit</option></select></label><span>{filtered.length} videos</span></div>
+    <div className="video-list">{filtered.map((problem) => { const status = data.videoStatuses?.[problem.id] ?? "Not Watched"; return <article className="video-row surface-panel" key={problem.id}><span className="video-row-icon"><PlayCircle size={17} /></span><div className="video-row-copy"><b>{problem.title}</b><span>{topicLabel(problem.topic)} · {problem.difficulty}</span></div><a className="video-watch-link" href={problem.videoUrl} target="_blank" rel="noreferrer">Watch <ExternalLink size={12} /></a><select aria-label={`Video status for ${problem.title}`} value={status} onChange={(event) => onVideoStatus(problem.id, event.target.value as VideoStatus)}><option>Not Watched</option><option>Watched</option><option>Revisit</option></select></article>; })}</div>
+    {filtered.length === 0 && <EmptyState title="No videos match" message="Try another topic or status filter." />}
+    <p className="video-data-note">Video tracking is independent of problem status. Opening a video does not automatically mark it watched.</p>
   </>;
 }
 
@@ -373,8 +399,10 @@ function AnalyticsPage({ data, today }: { data: JourneyData | null; today: strin
     return { week: `W${index + 1}`, solved: solved.filter((problem) => problem.solvedAt >= startDay && problem.solvedAt <= endDay).length };
   });
   const donutColors = ["var(--color-success)", "var(--color-info)", "var(--color-warning)"];
+  const videoLessons = data.problems.filter((problem) => Boolean(problem.videoUrl));
+  const watchedVideos = videoLessons.filter((problem) => data.videoStatuses?.[problem.id] === "Watched").length;
   return <>
-    <section className="analytics-kpis"><StatCard label="Problems solved" value={solved.length} icon={CheckCircle2} tone="green-tone" footnote="Across all difficulties" /><StatCard label="Study streak" value={streak.current} unit=" days" icon={Flame} tone="orange-tone" footnote={`${streak.longest} days is your personal best`} /><StatCard label="Total study time" value={`${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`} icon={Clock3} tone="violet-tone" footnote={`Over ${streak.totalDays} active days`} /><StatCard label="A2Z progress" value={`${data.problems.length ? Math.round(solved.length / data.problems.length * 100) : 0}%`} icon={TrendingUp} tone="blue-tone" footnote={`${topics.filter((topic) => topic.percent === 100).length} of 17 topics complete`} /></section>
+    <section className="analytics-kpis"><StatCard label="Problems solved" value={solved.length} icon={CheckCircle2} tone="green-tone" footnote="Across all difficulties" /><StatCard label="Study streak" value={streak.current} unit=" days" icon={Flame} tone="orange-tone" footnote={`${streak.longest} days is your personal best`} /><StatCard label="Total study time" value={`${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`} icon={Clock3} tone="violet-tone" footnote={`Over ${streak.totalDays} active days`} /><StatCard label="A2Z progress" value={`${data.problems.length ? Math.round(solved.length / data.problems.length * 100) : 0}%`} icon={TrendingUp} tone="blue-tone" footnote={`${topics.filter((topic) => topic.percent === 100).length} of ${topics.length} topics complete`} /><StatCard label="Videos watched" value={watchedVideos} unit={`/ ${videoLessons.length}`} icon={PlayCircle} tone="violet-tone" footnote={`${videoLessons.length ? Math.round(watchedVideos / videoLessons.length * 100) : 0}% of linked video resources`} /></section>
     <div className="analytics-grid">
       <section className="surface-panel chart-panel"><PanelTitle title="Problems solved over time" trailing="Last 8 weeks" /><div className="chart-area"><ResponsiveContainer width="100%" height="100%"><BarChart data={solvedPerWeek} margin={{ top: 10, right: 8, left: -22, bottom: 0 }}><CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 5" /><XAxis dataKey="week" tickLine={false} axisLine={false} tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} /><YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} /><Tooltip cursor={{ fill: "var(--color-accent)" }} contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 6 }} /><Bar dataKey="solved" name="Solved" fill="var(--color-acid)" radius={[4, 4, 0, 0]} maxBarSize={30} /></BarChart></ResponsiveContainer></div><div className="chart-caption"><span><i className="legend-dot solved-dot" /> Problems solved</span><span>Weekly activity</span></div></section>
       <section className="surface-panel difficulty-panel"><PanelTitle title="Solved by difficulty" /><div className="difficulty-chart-wrap"><div className="difficulty-donut"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={difficultyData} dataKey="count" nameKey="name" innerRadius={45} outerRadius={61} stroke="var(--color-card)" strokeWidth={4} paddingAngle={3}>{difficultyData.map((entry, index) => <Cell key={entry.name} fill={donutColors[index]} />)}</Pie><Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 6 }} /></PieChart></ResponsiveContainer><div className="donut-center"><b>{solved.length}</b><span>solved</span></div></div><div className="difficulty-legend">{difficultyData.map((entry, index) => <div key={entry.name}><i style={{ background: donutColors[index] }} /><span>{entry.name}</span><b>{entry.count}</b></div>)}</div></div></section>
