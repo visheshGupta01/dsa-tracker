@@ -383,3 +383,33 @@ a.table-problem-name, a.roadmap-problem-name { text-decoration: none; }
 .problem-title-cell .problem-secondary-link { align-items: center; justify-content: center; }
 @media (max-width: 600px) { .problem-external-links { gap: 6px; } .problem-external-links a { min-height: 32px; padding: 6px 8px; font-size: 9px; } }
 
+
+
+/* Video tracking and sheet view switch */
+.sheet-view-tabs { display: flex; gap: 6px; margin: 0 0 14px; padding: 4px; width: fit-content; max-width: 100%; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+.sheet-view-tabs button { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 7px 12px; border: 1px solid transparent; border-radius: 6px; color: var(--muted-foreground); font-size: 11px; cursor: pointer; }
+.sheet-view-tabs button.active { border-color: var(--border); background: var(--card); color: var(--foreground); box-shadow: 0 1px 2px #00000012; }
+.sheet-view-tabs button span { padding: 2px 6px; border-radius: 5px; background: var(--surface-raised); font-size: 9px; }
+.video-course-card { display: flex; align-items: center; gap: 15px; margin-bottom: 14px; padding: 18px; }
+.video-course-icon, .video-row-icon { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--acid); }
+.video-course-copy { flex: 1; min-width: 0; }
+.video-course-copy h2 { margin: 4px 0; font-size: 16px; font-weight: 650; }
+.video-course-copy p { margin: 0 0 12px; color: var(--muted-foreground); font-size: 10px; line-height: 1.6; }
+.video-progress-line { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--muted-foreground); font-size: 9px; }
+.video-progress-line b { color: var(--foreground); }
+.video-filters { display: flex; align-items: end; gap: 10px; margin: 14px 0 9px; }
+.video-filters label { display: grid; gap: 5px; color: var(--muted-foreground); font-size: 9px; }
+.video-filters select, .video-row select { min-width: 120px; height: 32px; padding: 0 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--foreground); font-size: 10px; }
+.video-filters > span { margin-left: auto; color: var(--muted-foreground); font-size: 9px; }
+.video-list { display: grid; gap: 7px; }
+.video-row { display: flex; align-items: center; gap: 11px; padding: 11px 13px; }
+.video-row-icon { width: 32px; height: 32px; border-radius: 7px; }
+.video-row-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
+.video-row-copy b { overflow: hidden; color: var(--foreground); font-size: 10px; font-weight: 580; text-overflow: ellipsis; white-space: nowrap; }
+.video-row-copy span { color: var(--muted-foreground); font-size: 9px; }
+.video-watch-link { display: inline-flex; align-items: center; gap: 4px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; color: var(--foreground); font-size: 9px; text-decoration: none; white-space: nowrap; }
+.video-watch-link:hover { border-color: var(--accent); color: var(--acid); }
+.video-data-note { margin-top: 12px; color: var(--muted-foreground); font-size: 9px; }
+.video-sheet-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; color: var(--muted-foreground); font-size: 9px; text-decoration: none; }
+.video-sheet-link:hover { color: var(--acid); }
+@media (max-width: 600px) { .sheet-view-tabs { width: 100%; } .sheet-view-tabs button { flex: 1; justify-content: center; padding: 7px 8px; } .video-course-card { flex-wrap: wrap; gap: 10px; padding: 13px; } .video-course-copy { width: calc(100% - 55px); flex: initial; } .video-course-card > .inline-flex { width: 100%; justify-content: center; } .video-row { flex-wrap: wrap; gap: 8px; } .video-row-copy { width: calc(100% - 48px); flex: initial; } .video-watch-link { margin-left: 40px; } .video-row select { margin-left: auto; min-width: 112px; } .video-filters { align-items: stretch; } .video-filters label { flex: 1; min-width: 0; } .video-filters select { min-width: 0; width: 100%; } }
