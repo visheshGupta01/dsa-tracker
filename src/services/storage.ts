@@ -11,6 +11,23 @@ const statusMap: Record<string, ProblemStatus> = {
   "Needs Revision": "Needs Revision",
 };
 
+function normaliseVideoStatuses(data: JourneyData): NonNullable<JourneyData["videoStatuses"]> {
+  const statuses = { ...(data.videoStatuses ?? {}) };
+  // Migrate the earlier per-problem video keys to the new per-video URL keys.
+  for (const problem of data.problems) {
+    const legacyStatus = statuses[problem.id];
+    if (!problem.videoUrl || !legacyStatus) continue;
+    const currentStatus = statuses[problem.videoUrl];
+    if (legacyStatus === "Revisit" || currentStatus === "Revisit") {
+      statuses[problem.videoUrl] = "Revisit";
+    } else if (legacyStatus === "Watched" || currentStatus === "Watched") {
+      statuses[problem.videoUrl] = "Watched";
+    }
+    if (problem.id !== problem.videoUrl) delete statuses[problem.id];
+  }
+  return statuses;
+}
+
 export function normaliseJourney(data: JourneyData): JourneyData {
   return {
     ...data,
@@ -18,7 +35,7 @@ export function normaliseJourney(data: JourneyData): JourneyData {
     sessions: Array.isArray(data.sessions) ? data.sessions : [],
     dailyTasks: data.dailyTasks ?? {},
     dailyMinutes: data.dailyMinutes ?? {},
-    videoStatuses: data.videoStatuses ?? {},
+    videoStatuses: normaliseVideoStatuses(data),
   };
 }
 
