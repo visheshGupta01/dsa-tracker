@@ -2,6 +2,7 @@ import { striverA2z } from "@/data/striver-a2z";
 
 export type Difficulty = "Easy" | "Medium" | "Hard" | "Unrated";
 export type ProblemStatus = "Not Started" | "Learning" | "Solved" | "Revise" | "Mastered" | "Needs Revision";
+export type VideoStatus = "Not Watched" | "Watched" | "Revisit";
 export type Confidence = "easy" | "needed-thinking" | "needed-hint" | "could-not-solve";
 
 export interface SheetAlternative {
@@ -83,7 +84,7 @@ export interface JourneyData {
   sessions: StudySession[];
   dailyTasks: Record<string, DailyTask[]>;
   dailyMinutes: Record<string, { learning: number; practice: number; revision: number }>;
-  videoStatuses?: Record<string, "Not Watched" | "Watched" | "Revisit">;
+  videoStatuses?: Record<string, VideoStatus>;
 }
 
 const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
