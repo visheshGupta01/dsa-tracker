@@ -413,3 +413,33 @@ a.table-problem-name, a.roadmap-problem-name { text-decoration: none; }
 .video-sheet-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; color: var(--muted-foreground); font-size: 9px; text-decoration: none; }
 .video-sheet-link:hover { color: var(--acid); }
 @media (max-width: 600px) { .sheet-view-tabs { width: 100%; } .sheet-view-tabs button { flex: 1; justify-content: center; padding: 7px 8px; } .video-course-card { flex-wrap: wrap; gap: 10px; padding: 13px; } .video-course-copy { width: calc(100% - 55px); flex: initial; } .video-course-card > .inline-flex { width: 100%; justify-content: center; } .video-row { flex-wrap: wrap; gap: 8px; } .video-row-copy { width: calc(100% - 48px); flex: initial; } .video-watch-link { margin-left: 40px; } .video-row select { margin-left: auto; min-width: 112px; } .video-filters { align-items: stretch; } .video-filters label { flex: 1; min-width: 0; } .video-filters select { min-width: 0; width: 100%; } }
+
+
+/* Distinct Striver video catalogue */
+.video-stat-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:10px 0 12px; }
+.video-stat-strip > div { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; }
+.video-stat-strip span { color:var(--muted-foreground); font-size:10px; }
+.video-stat-strip b { font-family:var(--font-display); font-size:18px; }
+.video-filters .video-search-label input { display:block; width:100%; min-width:0; height:31px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--foreground); font-size:10px; }
+.video-filters .video-search-label { flex:1.4; min-width:140px; }
+.course-topic-list { display:grid; gap:8px; margin-top:10px; }
+.course-topic-card { overflow:hidden; }
+.course-topic-card > summary { display:flex; align-items:center; gap:11px; min-height:60px; padding:10px 14px; list-style:none; cursor:pointer; }
+.course-topic-card > summary::-webkit-details-marker { display:none; }
+.course-topic-card > summary:hover { background:color-mix(in oklab,var(--accent) 55%,transparent); }
+.course-topic-number { display:grid; place-items:center; width:31px; height:31px; flex:none; border:1px solid var(--border); border-radius:8px; color:var(--muted-foreground); font-size:10px; font-weight:650; }
+.course-topic-title { display:grid; gap:4px; min-width:0; flex:1; }
+.course-topic-title b { overflow:hidden; font-size:11px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+.course-topic-title small { color:var(--muted-foreground); font-size:9px; }
+.course-topic-meter { width:94px; flex:none; }
+.course-topic-meter .progress-track { height:4px; }
+.course-topic-card > summary > svg { color:var(--muted-foreground); transition:transform .15s ease; }
+.course-topic-card[open] > summary > svg { transform:rotate(180deg); }
+.course-video-list { display:grid; padding:0 13px 11px 57px; }
+.course-video-row { display:flex; align-items:center; gap:9px; min-width:0; padding:9px 0; border-top:1px solid var(--border); }
+.course-video-copy { display:grid; gap:4px; min-width:0; flex:1; }
+.course-video-copy b { overflow:hidden; font-size:10px; font-weight:550; text-overflow:ellipsis; white-space:nowrap; }
+.course-video-copy span { color:var(--muted-foreground); font-size:8px; }
+.course-video-row select { width:112px; min-width:112px; min-height:29px; padding:4px 7px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--foreground); font-size:9px; }
+.course-topic-card .video-data-note { margin:0 14px 12px 57px; }
+@media(max-width:600px){.video-stat-strip{gap:6px}.video-stat-strip>div{padding:10px}.video-stat-strip span{font-size:8px}.video-stat-strip b{font-size:16px}.video-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.video-filters .video-search-label{min-width:0}.course-topic-card>summary{gap:7px;padding:9px}.course-topic-number{width:27px;height:27px}.course-topic-meter{width:48px}.course-video-list{padding:0 9px 9px}.course-video-row{flex-wrap:wrap;gap:7px}.course-video-copy{max-width:calc(100% - 42px)}.course-video-row .video-watch-link{margin-left:37px}.course-video-row select{margin-left:auto}.course-topic-card .video-data-note{margin:0 10px 12px}}
