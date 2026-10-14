@@ -1,13 +1,14 @@
 # DSA Journey
 
-A personal, local-first tracker for studying Data Structures & Algorithms in C++ with Striver's A2Z practice sheet. Keep your next steps visible, track problem status, revisit problems that need work, and see your consistency over time.
+A personal, local-first tracker for studying Data Structures & Algorithms in C++ with Striver's A2Z practice sheet and linked video lessons. Track problem status and lesson progress, revisit difficult concepts, and see your consistency over time.
 
 ## Features
 
 - **Dashboard** — daily focus, streak, overall completion, and revision reminders.
-- **DSA Sheet** — 402 practice-problem entries grouped across 20 modules, with search, topic/difficulty/status filters, and direct practice links.
+- **DSA Sheet** — 402 practice problems across 20 modules, plus a Videos tab grouping distinct source-linked lessons by topic with Watched / Not Watched / Revisit tracking.
 - **Progress** — study-time, solved-problem trends, and module completion analytics.
-- **Simple statuses** — Not Started, Solved, and Needs Revision.
+- **Problem statuses** — Not Started, Solved, and Needs Revision.
+- **Video tracking** — independent lesson statuses persisted in local storage and included in JSON backups.
 - **Private by default** — progress is stored in this browser with `localStorage`; there is no account or backend.
 - **JSON backup/restore** — export progress or import it on another browser/device.
 - **Official practice resources** — links to TakeUForward, LeetCode, and GeeksforGeeks where available; optional editorial/video links are shown when present.
@@ -30,8 +31,8 @@ React, TypeScript, TanStack Start/Router, Vite, Tailwind CSS, shadcn/ui, Lucide 
 Requirements: a recent Node.js version and npm (or Bun).
 
 ```bash
-git clone https://github.com/visheshGupta01/pixel-perfect-replica.git
-cd pixel-perfect-replica
+git clone https://github.com/visheshGupta01/dsa-tracker.git
+cd dsa-tracker
 npm install
 npm run dev
 ```
@@ -50,4 +51,4 @@ Import the repository into Vercel and use the detected build settings. Progress 
 
 ## Portfolio / LinkedIn
 
-Built DSA Journey, a responsive C++ practice tracker for Striver's A2Z sheet, with 402 linked practice problems, module-wise progress, revision statuses, local-first persistence, JSON backup/restore, and progress analytics.
+Built DSA Journey, a responsive C++ practice tracker for Striver's A2Z sheet, with 402 practice problems, distinct linked Striver course videos, lesson tracking, module-wise progress, revision statuses, local-first persistence, JSON backup/restore, and analytics.
