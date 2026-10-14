@@ -18,6 +18,7 @@ export function normaliseJourney(data: JourneyData): JourneyData {
     sessions: Array.isArray(data.sessions) ? data.sessions : [],
     dailyTasks: data.dailyTasks ?? {},
     dailyMinutes: data.dailyMinutes ?? {},
+    videoStatuses: data.videoStatuses ?? {},
   };
 }
 
@@ -37,6 +38,7 @@ export function importJourney(json: string): JourneyData {
     sessions: journey.sessions as StudySession[],
     dailyTasks: journey.dailyTasks ?? {},
     dailyMinutes: journey.dailyMinutes ?? {},
+    videoStatuses: journey.videoStatuses ?? {},
   }));
 }
 
