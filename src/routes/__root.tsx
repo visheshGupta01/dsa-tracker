@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/dsa-journey.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/dsa-tracker-icon.svg", type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,
