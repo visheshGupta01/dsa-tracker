@@ -14,10 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { activityByDay, completedStatuses, solveConfidenceDelay, solvedCount, streakStats, topicLabel, topicStats } from "@/lib/dsa";
 import { createStarterData, exportJourney, importJourney, localDate, minutesForDay, normaliseJourney, readJourney, resetJourney, revisionDate, tasksForDay, writeJourney } from "@/services/storage";
-import { roadmap, type Confidence, type DailyTask, type Difficulty, type DsaProblem, type JourneyData, type ProblemStatus } from "@/data/roadmap";
+import { roadmap, type Confidence, type DailyTask, type Difficulty, type DsaProblem, type JourneyData, type ProblemStatus, type VideoStatus } from "@/data/roadmap";
+import { courseVideos, videoTopics } from "@/data/course-videos";
 
 type Section = "Dashboard" | "DSA Sheet" | "Progress";
-type VideoStatus = "Not Watched" | "Watched" | "Revisit";
+
 const COURSE_PLAYLIST_URL = "https://www.youtube.com/playlist?list=PLgUwDviBIf0oF6QL8m22w1hIDC1vJ_BHz";
 const sectionMeta: Record<Section, { title: string; eyebrow: string; description: string }> = {
   Dashboard: { title: "Your next hour, well spent.", eyebrow: "YOUR STUDY SPACE", description: "One focused session at a time. Pick up where you left off." },
