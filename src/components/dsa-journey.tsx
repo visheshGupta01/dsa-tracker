@@ -345,19 +345,40 @@ function ProblemsPage({ data, updateProblem, onEdit, onAdd, onVideoStatus }: { d
 }
 
 function VideosPage({ data, onVideoStatus }: { data: JourneyData; onVideoStatus: (id: string, status: VideoStatus) => void }) {
-  const lessons = data.problems.filter((problem) => Boolean(problem.videoUrl));
-  const watched = lessons.filter((problem) => data.videoStatuses?.[problem.id] === "Watched").length;
-  const percent = lessons.length ? Math.round(watched / lessons.length * 100) : 0;
   const [topicFilter, setTopicFilter] = useState("All topics");
   const [statusFilter, setStatusFilter] = useState("All statuses");
-  const topics = [...new Set(lessons.map((problem) => problem.topic))];
-  const filtered = lessons.filter((problem) => (topicFilter === "All topics" || problem.topic === topicFilter) && (statusFilter === "All statuses" || (data.videoStatuses?.[problem.id] ?? "Not Watched") === statusFilter));
+  const [query, setQuery] = useState("");
+  const progress = data.videoStatuses ?? {};
+  const watched = courseVideos.filter((video) => progress[video.id] === "Watched").length;
+  const revisits = courseVideos.filter((video) => progress[video.id] === "Revisit").length;
+  const percent = courseVideos.length ? Math.round(watched / courseVideos.length * 100) : 0;
+  const filteredTopics = videoTopics.filter((topic) => topicFilter === "All topics" || topic.title === topicFilter);
+  const statusFor = (id: string) => progress[id] ?? "Not Watched";
+  const filteredCount = filteredTopics.flatMap((topic) => topic.videos).filter((video) =>
+    (statusFilter === "All statuses" || statusFor(video.id) === statusFilter) &&
+    `${video.title} ${video.topic}`.toLowerCase().includes(query.toLowerCase())).length;
   return <>
-    <section className="surface-panel video-course-card"><div className="video-course-icon"><PlayCircle size={22} /></div><div className="video-course-copy"><span className="eyebrow"><i /> STRIVER A2Z VIDEO COURSE</span><h2>Watch, track, then practice</h2><p>Track the video resources linked to your A2Z problems separately from your solved status. Your video progress is saved in this browser.</p><div className="video-progress-line"><span><b>{watched}</b> of {lessons.length} watched</span><b>{percent}%</b></div><ProgressBar value={percent} /></div><Button asChild size="sm"><a href={COURSE_PLAYLIST_URL} target="_blank" rel="noreferrer"><PlayCircle size={14} /> Open full playlist <ExternalLink size={13} /></a></Button></section>
-    <div className="video-filters"><label>Topic<select value={topicFilter} onChange={(event) => setTopicFilter(event.target.value)}><option>All topics</option>{topics.map((topic) => <option key={topic}>{topic}</option>)}</select></label><label>Status<select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All statuses</option><option>Not Watched</option><option>Watched</option><option>Revisit</option></select></label><span>{filtered.length} videos</span></div>
-    <div className="video-list">{filtered.map((problem) => { const status = data.videoStatuses?.[problem.id] ?? "Not Watched"; return <article className="video-row surface-panel" key={problem.id}><span className="video-row-icon"><PlayCircle size={17} /></span><div className="video-row-copy"><b>{problem.title}</b><span>{topicLabel(problem.topic)} · {problem.difficulty}</span></div><a className="video-watch-link" href={problem.videoUrl} target="_blank" rel="noreferrer">Watch <ExternalLink size={12} /></a><select aria-label={`Video status for ${problem.title}`} value={status} onChange={(event) => onVideoStatus(problem.id, event.target.value as VideoStatus)}><option>Not Watched</option><option>Watched</option><option>Revisit</option></select></article>; })}</div>
-    {filtered.length === 0 && <EmptyState title="No videos match" message="Try another topic or status filter." />}
-    <p className="video-data-note">Video tracking is independent of problem status. Opening a video does not automatically mark it watched.</p>
+    <section className="surface-panel video-course-card"><div className="video-course-icon"><PlayCircle size={22} /></div><div className="video-course-copy"><span className="eyebrow"><i /> STRIVER A2Z VIDEO COURSE</span><h2>Watch, track, then practice</h2><p>Track distinct video links from the A2Z sheet. Progress is saved separately from problem status.</p><div className="video-progress-line"><span><b>{watched}</b> of {courseVideos.length} watched</span><b>{percent}%</b></div><ProgressBar value={percent} /></div><Button asChild size="sm"><a href={COURSE_PLAYLIST_URL} target="_blank" rel="noreferrer"><PlayCircle size={14} /> Open full playlist <ExternalLink size={13} /></a></Button></section>
+    <div className="video-stat-strip"><div className="surface-panel"><span>Watched</span><b>{watched}</b></div><div className="surface-panel"><span>Revisit</span><b>{revisits}</b></div><div className="surface-panel"><span>Not watched</span><b>{courseVideos.length - watched - revisits}</b></div></div>
+    <div className="video-filters">
+      <label>Topic<select value={topicFilter} onChange={(event) => setTopicFilter(event.target.value)}><option>All topics</option>{videoTopics.filter((topic) => topic.videos.length > 0).map((topic) => <option key={topic.title}>{topic.title}</option>)}</select></label>
+      <label>Status<select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All statuses</option><option>Not Watched</option><option>Watched</option><option>Revisit</option></select></label>
+      <label className="video-search-label">Search<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search lesson…" /></label>
+      <span>{filteredCount} videos</span>
+    </div>
+    <section className="course-topic-list">{filteredTopics.map((topic) => {
+      const videos = topic.videos.filter((video) =>
+        `${video.title} ${video.topic}`.toLowerCase().includes(query.toLowerCase()) &&
+        (statusFilter === "All statuses" || statusFor(video.id) === statusFilter));
+      if (query && videos.length === 0) return null;
+      if (statusFilter !== "All statuses" && videos.length === 0) return null;
+      const topicWatched = topic.videos.filter((video) => statusFor(video.id) === "Watched").length;
+      return <details key={topic.title} className="course-topic-card surface-panel" open={topicFilter !== "All topics" || undefined}>
+        <summary><span className="course-topic-number">{String(topic.step).padStart(2, "0")}</span><span className="course-topic-title"><b>{topic.title}</b><small>{topic.videos.length ? `${topicWatched}/${topic.videos.length} watched` : "No linked video in the current sheet data"}</small></span><span className="course-topic-meter"><ProgressBar value={topic.videos.length ? topicWatched / topic.videos.length * 100 : 0} /></span><ChevronDown size={15} /></summary>
+        {videos.length ? <div className="course-video-list">{videos.map((video) => <article className="course-video-row" key={video.id}><span className="video-row-icon"><PlayCircle size={16} /></span><div className="course-video-copy"><b>{video.title}</b><span>{video.duration || "Duration unavailable"}</span></div><a className="video-watch-link" href={video.url} target="_blank" rel="noreferrer">Watch <ExternalLink size={12} /></a><select aria-label={`Status for video ${video.title}`} value={statusFor(video.id)} onChange={(event) => onVideoStatus(video.id, event.target.value as VideoStatus)}><option>Not Watched</option><option>Watched</option><option>Revisit</option></select></article>)}</div> : <p className="video-data-note">No source-linked individual videos match these filters.</p>}
+      </details>;
+    })}</section>
+    <p className="video-data-note">These distinct links come from the bundled A2Z sheet snapshot; not every roadmap topic has an individual video URL. Opening a video does not mark it watched.</p>
   </>;
 }
 
