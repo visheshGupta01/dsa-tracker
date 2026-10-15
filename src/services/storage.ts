@@ -56,6 +56,7 @@ export function importJourney(json: string): JourneyData {
     dailyTasks: journey.dailyTasks ?? {},
     dailyMinutes: journey.dailyMinutes ?? {},
     videoStatuses: journey.videoStatuses ?? {},
+    topicTheoryStatuses: journey.topicTheoryStatuses ?? {},
   }));
 }
 

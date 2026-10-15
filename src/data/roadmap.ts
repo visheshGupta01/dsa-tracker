@@ -85,6 +85,7 @@ export interface JourneyData {
   dailyTasks: Record<string, DailyTask[]>;
   dailyMinutes: Record<string, { learning: number; practice: number; revision: number }>;
   videoStatuses?: Record<string, VideoStatus>;
+  topicTheoryStatuses?: Record<string, boolean>;
 }
 
 const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
