@@ -12,6 +12,18 @@ export interface CourseVideo {
 // Links are sourced from the bundled Striver A2Z sheet snapshot.
 // Duplicate links are collapsed within each topic; unavailable links are omitted.
 const rawVideos = {
+  "Course Foundations": [
+    { "title": "A2Z DSA Course Introduction", "url": "https://www.youtube.com/watch?v=0bHoB32fuj0", "duration": "8 min", "order": 1 },
+    { "title": "Set Up VS Code for DSA and Competitive Programming", "url": "https://www.youtube.com/watch?v=h3uDCJ5mvgw", "duration": "9 min", "order": 2 },
+    { "title": "C++ Basics in One Shot — A2Z DSA L1", "url": "https://www.youtube.com/watch?v=EAR7De6Goz4", "duration": "1 hr 26 min", "order": 3 },
+    { "title": "Time and Space Complexity", "url": "https://www.youtube.com/watch?v=FPu9Uld7W-E", "duration": "35 min", "order": 4 },
+    { "title": "Solve Any Pattern Question — 22 Patterns", "url": "https://www.youtube.com/watch?v=tNm_NNSB3_w", "duration": "1 hr 22 min", "order": 5 },
+    { "title": "Complete C++ STL in One Video", "url": "https://www.youtube.com/watch?v=RRVYpIET_RU", "duration": "1 hr 8 min", "order": 6 },
+    { "title": "Basic Maths for DSA — Euclidean Algorithm", "url": "https://www.youtube.com/watch?v=1xNbjMdbjug", "duration": "1 hr 3 min", "order": 7 },
+    { "title": "Introduction to Recursion — Recursion Tree and Stack Space", "url": "https://www.youtube.com/watch?v=yVdKa8dnKiE", "duration": "23 min", "order": 8 },
+    { "title": "Basic Problems on Recursion", "url": "https://www.youtube.com/watch?v=un6PLygfXrA", "duration": "22 min", "order": 9 },
+    { "title": "Hashing — Maps, Collisions and Time Complexity", "url": "https://www.youtube.com/watch?v=KEs5UyBJ39g", "duration": "1 hr", "order": 10 }
+  ],
   "Beginner Problems": [
     {
       "title": "Pattern 1",
@@ -1811,12 +1823,17 @@ const rawVideos = {
 export const courseVideos: CourseVideo[] = Object.entries(rawVideos).flatMap(([topic, entries]) =>
   entries.map((entry) => ({ ...entry, id: entry.url, topic }))
 ).sort((a, b) => {
+  if (a.topic === "Course Foundations") return b.topic === "Course Foundations" ? a.order - b.order : -1;
+  if (b.topic === "Course Foundations") return 1;
   const topicOrder = roadmap.findIndex((item) => item.title === a.topic) - roadmap.findIndex((item) => item.title === b.topic);
   return topicOrder || a.order - b.order;
 });
 
-export const videoTopics = roadmap.map((topic) => ({
-  title: topic.title,
-  step: topic.step,
-  videos: courseVideos.filter((video) => video.topic === topic.title),
-}));
+export const videoTopics = [
+  { title: "Course Foundations", step: 0, videos: courseVideos.filter((video) => video.topic === "Course Foundations") },
+  ...roadmap.map((topic) => ({
+    title: topic.title,
+    step: topic.step,
+    videos: courseVideos.filter((video) => video.topic === topic.title),
+  })),
+];
