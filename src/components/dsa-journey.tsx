@@ -290,7 +290,7 @@ function EmptyState({ title, message }: { title: string; message: string }) {
 }
 
 function youtubeId(url: string) {
-  const match = url.match(/(?:youtu\\.be\\/|youtube\\.com\\/(?:watch\\?(?:.*&)?v=|embed\\/|shorts\\/))([A-Za-z0-9_-]{6,})/);
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/);
   return match?.[1] ?? "";
 }
 
@@ -314,15 +314,15 @@ function RoadmapPage({ data, today, updateProblem, openProblem, onVideoStatus }:
       return <details className="roadmap-step surface-panel" key={topic.id} open={index === 0 || undefined}>
         <summary><span className={cn("step-check", topic.percent === 100 && "is-done")}>{topic.percent === 100 ? <Check size={14} /> : String(topic.step).padStart(2, "0")}</span><div className="step-name"><b>{topic.title}</b><small>{topic.done}/{topic.total} problems solved</small></div><div className="step-progress"><ProgressBar value={topic.percent} /><span>{topic.percent}%</span></div><span className="step-chevron"><ChevronDown size={16} /></span></summary>
         <div className="step-problems">
-          {[...grouped.entries()].map(([subtopic, problems]) => <section className="sheet-subtopic" key={subtopic}>
-            <div className="sheet-subtopic-heading"><b>{subtopic}</b><span>{problems.filter((problem) => completedStatuses.has(problem.status)).length}/{problems.length}</span></div>
+          {[...grouped.entries()].map(([subtopic, problems]) => <section className="border-t border-border py-2 first:border-t-0" key={subtopic}>
+            <div className="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"><b>{subtopic}</b><span>{problems.filter((problem) => completedStatuses.has(problem.status)).length}/{problems.length}</span></div>
             {problems.map((problem) => {
               const matchedVideo = problem.videoUrl ? courseVideos.find((video) => youtubeId(video.url) === youtubeId(problem.videoUrl!)) : undefined;
               const status = matchedVideo ? statusFor(matchedVideo.id) : "Not Watched";
-              return <div className="roadmap-problem-row sheet-problem-row" key={problem.id}>
+              return <div className="roadmap-problem-row" key={problem.id}>
                 <button className={cn("roadmap-problem-check", completedStatuses.has(problem.status) && "checked", problem.status === "Needs Revision" && "needs-revision")} aria-label={`Mark ${problem.title} ${completedStatuses.has(problem.status) ? "not started" : "solved"}`} onClick={() => updateProblem(problem.id, { status: completedStatuses.has(problem.status) ? "Not Started" : "Solved", solvedAt: completedStatuses.has(problem.status) ? "" : today })}>{problem.status === "Needs Revision" ? <RotateCcw size={12} /> : completedStatuses.has(problem.status) ? <Check size={13} /> : <Circle size={13} />}</button>
-                <div className="sheet-problem-main"><a className="roadmap-problem-name" href={problem.problemUrl || undefined} target={problem.problemUrl ? "_blank" : undefined} rel={problem.problemUrl ? "noreferrer" : undefined} onClick={!problem.problemUrl ? (event) => { event.preventDefault(); openProblem(problem); } : undefined}>{problem.title}</a><span className="sheet-problem-meta">{problem.tier ? problem.tier : problem.difficulty}</span></div>
-                {problem.videoUrl && <div className="sheet-video-actions"><a className="sheet-video-link" href={problem.videoUrl} target="_blank" rel="noreferrer"><PlayCircle size={13} /> Watch video <ExternalLink size={10} /></a>{matchedVideo && <select aria-label={`Video status for ${problem.title}`} className="sheet-video-status" value={status} onChange={(event) => onVideoStatus(matchedVideo.id, event.target.value as VideoStatus)}><option>Not Watched</option><option>Watched</option><option>Revisit</option></select>}</div>}
+                <div className="flex min-w-0 flex-1 flex-col"><a className="roadmap-problem-name" href={problem.problemUrl || undefined} target={problem.problemUrl ? "_blank" : undefined} rel={problem.problemUrl ? "noreferrer" : undefined} onClick={!problem.problemUrl ? (event) => { event.preventDefault(); openProblem(problem); } : undefined}>{problem.title}</a><span className="text-xs capitalize text-muted-foreground">{problem.tier ? problem.tier : problem.difficulty}</span></div>
+                {problem.videoUrl && <div className="flex items-center gap-2"><a className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-medium text-primary hover:underline" href={problem.videoUrl} target="_blank" rel="noreferrer"><PlayCircle size={13} /> Watch video <ExternalLink size={10} /></a>{matchedVideo && <select aria-label={`Video status for ${problem.title}`} className="max-w-32 rounded-md border border-border bg-background px-2 py-1 text-xs" value={status} onChange={(event) => onVideoStatus(matchedVideo.id, event.target.value as VideoStatus)}><option>Not Watched</option><option>Watched</option><option>Revisit</option></select>}</div>}
                 <StatusBadge status={problem.status} />
                 <button className="roadmap-row-edit" aria-label={`Edit ${problem.title}`} onClick={() => openProblem(problem)}><ArrowRight size={14} /></button>
               </div>;
@@ -352,7 +352,7 @@ function ProblemsPage({ data, today, updateProblem, openProblem, onEdit, onAdd, 
   };
   return <>
     <div className="sheet-view-tabs" role="tablist" aria-label="DSA sheet views"><button role="tab" aria-selected={sheetView === "sheet"} className={cn(sheetView === "sheet" && "active")} onClick={() => setSheetView("sheet")}><BookOpen size={15} /> Sheet <span>In order</span></button><button role="tab" aria-selected={sheetView === "problems"} className={cn(sheetView === "problems" && "active")} onClick={() => setSheetView("problems")}><Code2 size={15} /> All problems <span>{data.problems.length}</span></button><button role="tab" aria-selected={sheetView === "videos"} className={cn(sheetView === "videos" && "active")} onClick={() => setSheetView("videos")}><PlayCircle size={15} /> Video library <span>{courseVideos.filter((video) => data.videoStatuses?.[video.id] === "Watched").length}/{courseVideos.length}</span></button></div>
-    {sheetView === "sheet" ? <RoadmapPage data={data} today={localDate()} updateProblem={updateProblem} openProblem={openProblem} onVideoStatus={onVideoStatus} /> : sheetView === "videos" ? <VideosPage data={data} onVideoStatus={onVideoStatus} /> : <>
+    {sheetView === "sheet" ? <RoadmapPage data={data} today={today} updateProblem={updateProblem} openProblem={openProblem} onVideoStatus={onVideoStatus} /> : sheetView === "videos" ? <VideosPage data={data} onVideoStatus={onVideoStatus} /> : <>
     <section className="surface-panel mb-4 flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-foreground"><PlayCircle size={22} /></span>
