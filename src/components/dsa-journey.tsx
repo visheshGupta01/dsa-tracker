@@ -16,7 +16,6 @@ import { activityByDay, completedStatuses, solveConfidenceDelay, solvedCount, st
 import { createStarterData, exportJourney, importJourney, localDate, minutesForDay, normaliseJourney, readJourney, resetJourney, revisionDate, tasksForDay, writeJourney } from "@/services/storage";
 import { roadmap, type Confidence, type DailyTask, type Difficulty, type DsaProblem, type JourneyData, type ProblemStatus, type VideoStatus } from "@/data/roadmap";
 import { courseVideos, videoTopics } from "@/data/course-videos";
-import { LearningPage } from "@/components/learning-page";
 
 type Section = "Dashboard" | "DSA Sheet" | "Progress";
 
@@ -172,7 +171,7 @@ export function DsaJourney({ section }: { section: Section }) {
           </div>
           {!data ? <LoadingState /> : <>
             {section === "Dashboard" && <DashboardPage {...common} onFinish={(change) => setData((previous) => previous ? change(previous) : previous)} />}
-            {section === "DSA Sheet" && <ProblemsPage {...common} onEdit={openProblem} onAdd={() => openProblem()} onVideoStatus={(id, status) => setData((current) => current ? { ...current, videoStatuses: { ...(current.videoStatuses ?? {}), [id]: status } } : current)} onTheoryStatus={(topic, reviewed) => setData((current) => current ? { ...current, topicTheoryStatuses: { ...(current.topicTheoryStatuses ?? {}), [topic]: reviewed } } : current)} />}
+            {section === "DSA Sheet" && <ProblemsPage {...common} onEdit={openProblem} onAdd={() => openProblem()} onVideoStatus={(id, status) => setData((current) => current ? { ...current, videoStatuses: { ...(current.videoStatuses ?? {}), [id]: status } } : current)} />}
             {section === "Progress" && <AnalyticsPage {...common} />}
           </>}
         </main>
@@ -265,8 +264,8 @@ function DashboardPage({ data, today, updateProblem, openProblem, setRevisionPro
       </div>
 
       <aside className="dashboard-column side-column">
-        <section className="surface-panel continue-panel"><div className="continue-heading"><div><span className="eyebrow"><i /> PICK UP WHERE YOU LEFT OFF</span><h2>{currentTopic?.title ?? "Binary Search"}</h2></div><span className="continue-symbol"><ArrowDownUp size={17} /></span></div><p className="continue-subtitle">Open your module to follow theory → lesson → practice in one place.</p><div className="continue-progress-label"><span>{currentTopic?.done ?? 0} of {currentTopic?.total ?? 0} problems</span><b>{currentTopic?.percent ?? 0}%</b></div><ProgressBar value={currentTopic?.percent ?? 0} /><Link to="/roadmap" className="continue-link">Continue learning <ArrowRight size={15} /></Link></section>
-        <section className="surface-panel continue-panel video-continue-panel"><div className="continue-heading"><div><span className="eyebrow"><i /> ONE CLEAR WORKFLOW</span><h2>Learn → Watch → Solve</h2></div><span className="continue-symbol"><BookOpen size={17} /></span></div><p className="continue-subtitle">Each topic brings theory, matching Striver lessons, and ordered practice problems together. No switching between separate checklists.</p><Link to="/roadmap" className="continue-link">Continue in guided learning <ArrowRight size={14} /></Link></section>
+        <section className="surface-panel continue-panel"><div className="continue-heading"><div><span className="eyebrow"><i /> PICK UP WHERE YOU LEFT OFF</span><h2>{currentTopic?.title ?? "Binary Search"}</h2></div><span className="continue-symbol"><ArrowDownUp size={17} /></span></div><p className="continue-subtitle">Follow the numbered Striver steps from top to bottom; each problem shows its own video link when available.</p><div className="continue-progress-label"><span>{currentTopic?.done ?? 0} of {currentTopic?.total ?? 0} problems</span><b>{currentTopic?.percent ?? 0}%</b></div><ProgressBar value={currentTopic?.percent ?? 0} /><Link to="/roadmap" className="continue-link">Continue learning <ArrowRight size={15} /></Link></section>
+        <section className="surface-panel continue-panel video-continue-panel"><div className="continue-heading"><div><span className="eyebrow"><i /> STRIVER SHEET PATH</span><h2>Follow the numbered steps</h2></div><span className="continue-symbol"><BookOpen size={17} /></span></div><p className="continue-subtitle">The official step order is the path. Open a step, solve its problems in order, and use the video link beside a problem when you need it.</p><Link to="/roadmap" className="continue-link">Continue in guided learning <ArrowRight size={14} /></Link></section>
         <section className="surface-panel revision-preview"><PanelTitle title="Up next to revise" trailing={`${due} due`} href="/roadmap" />{data.problems.filter((problem) => problem.status === "Needs Revision" && problem.nextRevisionAt && problem.nextRevisionAt <= today).slice(0, 2).map((problem) => <div className="revision-mini" key={problem.id}><span className="revision-mini-icon"><RotateCcw size={14} /></span><div><b>{problem.title}</b><small>{problem.nextRevisionAt < today ? "Overdue" : "Due today"} · {problem.topic}</small></div><button aria-label={`Revise ${problem.title}`} onClick={() => setRevisionProblem(problem)}><ArrowRight size={14} /></button></div>)}{due === 0 && <p className="all-clear"><CheckCircle2 size={15} /> You're all caught up for today.</p>}</section>
         <section className="surface-panel consistency-panel"><PanelTitle title="Your rhythm" trailing="Progress" href="/analytics" /><Heatmap sessions={data.sessions} today={today} compact /><div className="consistency-foot"><span><b>{stats.totalDays}</b> study days</span><span><i className="legend-dot solved-dot" /> Less <HeatScale /> More</span></div></section>
         <div className="side-quote"><Sparkles size={15} /><span>“Every expert was once a beginner.”<small>Keep showing up.</small></span></div>
@@ -290,20 +289,54 @@ function EmptyState({ title, message }: { title: string; message: string }) {
   return <div className="empty-state"><span className="empty-icon"><ListChecks size={19} /></span><b>{title}</b><p>{message}</p></div>;
 }
 
-function RoadmapPage({ data, today, updateProblem, openProblem }: { data: JourneyData | null; today: string; updateProblem: (id: string, patch: Partial<DsaProblem>) => void; openProblem: (problem?: DsaProblem) => void }) {
+function youtubeId(url: string) {
+  const match = url.match(/(?:youtu\\.be\\/|youtube\\.com\\/(?:watch\\?(?:.*&)?v=|embed\\/|shorts\\/))([A-Za-z0-9_-]{6,})/);
+  return match?.[1] ?? "";
+}
+
+function RoadmapPage({ data, today, updateProblem, openProblem, onVideoStatus }: { data: JourneyData | null; today: string; updateProblem: (id: string, patch: Partial<DsaProblem>) => void; openProblem: (problem?: DsaProblem) => void; onVideoStatus: (id: string, status: VideoStatus) => void }) {
   if (!data) return null;
   const officialProblems = data.problems.filter((problem) => !problem.isPersonal);
   const topics = topicStats(officialProblems);
   const solved = solvedCount({ ...data, problems: officialProblems });
+  const statusFor = (id: string) => data.videoStatuses?.[id] ?? "Not Watched";
   return <>
-    <section className="roadmap-summary surface-panel"><div className="roadmap-sum-icon"><BookOpen size={20} /></div><div className="roadmap-sum-copy"><span>STRIVER A2Z SHEET</span><b>{solved} <i>/</i> {officialProblems.length} <small>problems solved</small></b></div><div className="roadmap-sum-progress"><ProgressBar value={officialProblems.length ? solved / officialProblems.length * 100 : 0} /><span>{officialProblems.length ? Math.round(solved / officialProblems.length * 100) : 0}% overall</span></div><div className="roadmap-sum-meta"><span>{roadmap.length} modules</span><span>·</span><span>{officialProblems.length} practice problems</span></div></section>
-    <section className="roadmap-list">{topics.map((topic, index) => <details className="roadmap-step surface-panel" key={topic.id} open={index === 2 || index === 3 || undefined}><summary><span className={cn("step-check", topic.percent === 100 && "is-done")}>{topic.percent === 100 ? <Check size={14} /> : String(topic.step).padStart(2, "0")}</span><div className="step-name"><b>{topic.title}</b><small>{topic.done}/{topic.total} problems complete</small></div><div className="step-progress"><ProgressBar value={topic.percent} /><span>{topic.percent}%</span></div><span className="step-chevron"><ChevronDown size={16} /></span></summary><div className="step-problems">{topic.problems.map((problem) => <div className="roadmap-problem-row" key={problem.id}><button className={cn("roadmap-problem-check", completedStatuses.has(problem.status) && "checked", problem.status === "Needs Revision" && "needs-revision")} aria-label={`Mark ${problem.title} ${completedStatuses.has(problem.status) ? "not started" : "solved"}`} onClick={() => updateProblem(problem.id, { status: completedStatuses.has(problem.status) ? "Not Started" : "Solved", solvedAt: completedStatuses.has(problem.status) ? "" : today })}>{problem.status === "Needs Revision" ? <RotateCcw size={12} /> : completedStatuses.has(problem.status) ? <Check size={13} /> : <Circle size={13} />}</button><a className="roadmap-problem-name" href={problem.problemUrl || undefined} target={problem.problemUrl ? "_blank" : undefined} rel={problem.problemUrl ? "noreferrer" : undefined} onClick={!problem.problemUrl ? (event) => { event.preventDefault(); openProblem(problem); } : undefined}>{problem.title}</a>{leetcodeUrlFor(problem) && <a className="problem-secondary-link roadmap-leetcode-link" href={leetcodeUrlFor(problem)} target="_blank" rel="noreferrer" aria-label={`Open ${problem.title} on LeetCode`}>LeetCode <ExternalLink size={9} /></a>}<DifficultyBadge difficulty={problem.difficulty} /><StatusBadge status={problem.status} /><button className="roadmap-row-edit" aria-label={`Edit ${problem.title}`} onClick={() => openProblem(problem)}><ArrowRight size={14} /></button></div>)}</div></details>)}</section>
-    <p className="data-note"><Sparkles size={14} /> Tracks practice problems, not every theory lesson. <a href="https://takeuforward.org/prep-hub/strivers-a2z-dsa-sheet" target="_blank" rel="noreferrer">Open official sheet <ArrowRight size={12} /></a> · Unrated means no Easy / Medium / Hard label was published.</p>
+    <section className="roadmap-summary surface-panel"><div className="roadmap-sum-icon"><BookOpen size={20} /></div><div className="roadmap-sum-copy"><span>STRIVER A2Z SHEET</span><b>{solved} <i>/</i> {officialProblems.length} <small>problems solved</small></b></div><div className="roadmap-sum-progress"><ProgressBar value={officialProblems.length ? solved / officialProblems.length * 100 : 0} /><span>{officialProblems.length ? Math.round(solved / officialProblems.length * 100) : 0}% overall</span></div><div className="roadmap-sum-meta"><span>{roadmap.length} steps</span><span>·</span><span>{officialProblems.length} problems</span></div></section>
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground"><span>Follow the steps from top to bottom. Each problem has its own practice link and video when available.</span><a className="problem-secondary-link" href="https://takeuforward.org/prep-hub/strivers-a2z-dsa-sheet" target="_blank" rel="noreferrer">Official Striver sheet <ExternalLink size={12} /></a></div>
+    <section className="roadmap-list">{topics.map((topic, index) => {
+      const grouped = new Map<string, DsaProblem[]>();
+      topic.problems.forEach((problem) => {
+        const label = problem.subtopic?.trim() || "Practice problems";
+        const list = grouped.get(label) ?? [];
+        list.push(problem);
+        grouped.set(label, list);
+      });
+      return <details className="roadmap-step surface-panel" key={topic.id} open={index === 0 || undefined}>
+        <summary><span className={cn("step-check", topic.percent === 100 && "is-done")}>{topic.percent === 100 ? <Check size={14} /> : String(topic.step).padStart(2, "0")}</span><div className="step-name"><b>{topic.title}</b><small>{topic.done}/{topic.total} problems solved</small></div><div className="step-progress"><ProgressBar value={topic.percent} /><span>{topic.percent}%</span></div><span className="step-chevron"><ChevronDown size={16} /></span></summary>
+        <div className="step-problems">
+          {[...grouped.entries()].map(([subtopic, problems]) => <section className="sheet-subtopic" key={subtopic}>
+            <div className="sheet-subtopic-heading"><b>{subtopic}</b><span>{problems.filter((problem) => completedStatuses.has(problem.status)).length}/{problems.length}</span></div>
+            {problems.map((problem) => {
+              const matchedVideo = problem.videoUrl ? courseVideos.find((video) => youtubeId(video.url) === youtubeId(problem.videoUrl!)) : undefined;
+              const status = matchedVideo ? statusFor(matchedVideo.id) : "Not Watched";
+              return <div className="roadmap-problem-row sheet-problem-row" key={problem.id}>
+                <button className={cn("roadmap-problem-check", completedStatuses.has(problem.status) && "checked", problem.status === "Needs Revision" && "needs-revision")} aria-label={`Mark ${problem.title} ${completedStatuses.has(problem.status) ? "not started" : "solved"}`} onClick={() => updateProblem(problem.id, { status: completedStatuses.has(problem.status) ? "Not Started" : "Solved", solvedAt: completedStatuses.has(problem.status) ? "" : today })}>{problem.status === "Needs Revision" ? <RotateCcw size={12} /> : completedStatuses.has(problem.status) ? <Check size={13} /> : <Circle size={13} />}</button>
+                <div className="sheet-problem-main"><a className="roadmap-problem-name" href={problem.problemUrl || undefined} target={problem.problemUrl ? "_blank" : undefined} rel={problem.problemUrl ? "noreferrer" : undefined} onClick={!problem.problemUrl ? (event) => { event.preventDefault(); openProblem(problem); } : undefined}>{problem.title}</a><span className="sheet-problem-meta">{problem.tier ? problem.tier : problem.difficulty}</span></div>
+                {problem.videoUrl && <div className="sheet-video-actions"><a className="sheet-video-link" href={problem.videoUrl} target="_blank" rel="noreferrer"><PlayCircle size={13} /> Watch video <ExternalLink size={10} /></a>{matchedVideo && <select aria-label={`Video status for ${problem.title}`} className="sheet-video-status" value={status} onChange={(event) => onVideoStatus(matchedVideo.id, event.target.value as VideoStatus)}><option>Not Watched</option><option>Watched</option><option>Revisit</option></select>}</div>}
+                <StatusBadge status={problem.status} />
+                <button className="roadmap-row-edit" aria-label={`Edit ${problem.title}`} onClick={() => openProblem(problem)}><ArrowRight size={14} /></button>
+              </div>;
+            })}
+          </section>)}
+        </div>
+      </details>;
+    })}</section>
+    <p className="data-note"><Sparkles size={14} /> The order and module structure follow the Striver A2Z sheet snapshot. A missing video button means no individual video URL was provided for that problem.</p>
   </>;
 }
 
-function ProblemsPage({ data, updateProblem, onEdit, onAdd, onVideoStatus, onTheoryStatus }: { data: JourneyData | null; updateProblem: (id: string, patch: Partial<DsaProblem>) => void; onEdit: (problem?: DsaProblem) => void; onAdd: () => void; onVideoStatus: (id: string, status: VideoStatus) => void; onTheoryStatus: (topic: string, reviewed: boolean) => void }) {
-  const [sheetView, setSheetView] = useState<"learn" | "problems" | "videos">("learn");
+function ProblemsPage({ data, today, updateProblem, openProblem, onEdit, onAdd, onVideoStatus }: { data: JourneyData | null; today: string; updateProblem: (id: string, patch: Partial<DsaProblem>) => void; openProblem: (problem?: DsaProblem) => void; onEdit: (problem?: DsaProblem) => void; onAdd: () => void; onVideoStatus: (id: string, status: VideoStatus) => void }) {
+  const [sheetView, setSheetView] = useState<"sheet" | "problems" | "videos">("sheet");
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState("All topics");
   const [difficulty, setDifficulty] = useState("All difficulties");
@@ -318,8 +351,8 @@ function ProblemsPage({ data, updateProblem, onEdit, onAdd, onVideoStatus, onThe
     updateProblem(id, { status, solvedAt: status === "Solved" ? item?.solvedAt || localDate() : item?.solvedAt || "" });
   };
   return <>
-    <div className="sheet-view-tabs" role="tablist" aria-label="DSA learning workspace"><button role="tab" aria-selected={sheetView === "learn"} className={cn(sheetView === "learn" && "active")} onClick={() => setSheetView("learn")}><BookOpen size={15} /> Learn <span>Guided</span></button><button role="tab" aria-selected={sheetView === "problems"} className={cn(sheetView === "problems" && "active")} onClick={() => setSheetView("problems")}><Code2 size={15} /> Problems <span>{data.problems.length}</span></button><button role="tab" aria-selected={sheetView === "videos"} className={cn(sheetView === "videos" && "active")} onClick={() => setSheetView("videos")}><PlayCircle size={15} /> Videos <span>{courseVideos.filter((video) => data.videoStatuses?.[video.id] === "Watched").length}/{courseVideos.length}</span></button></div>
-    {sheetView === "learn" ? <LearningPage data={data} updateProblem={updateProblem} onVideoStatus={onVideoStatus} onTheoryStatus={onTheoryStatus} onShowProblems={() => setSheetView("problems")} /> : sheetView === "videos" ? <VideosPage data={data} onVideoStatus={onVideoStatus} /> : <>
+    <div className="sheet-view-tabs" role="tablist" aria-label="DSA sheet views"><button role="tab" aria-selected={sheetView === "sheet"} className={cn(sheetView === "sheet" && "active")} onClick={() => setSheetView("sheet")}><BookOpen size={15} /> Sheet <span>In order</span></button><button role="tab" aria-selected={sheetView === "problems"} className={cn(sheetView === "problems" && "active")} onClick={() => setSheetView("problems")}><Code2 size={15} /> All problems <span>{data.problems.length}</span></button><button role="tab" aria-selected={sheetView === "videos"} className={cn(sheetView === "videos" && "active")} onClick={() => setSheetView("videos")}><PlayCircle size={15} /> Video library <span>{courseVideos.filter((video) => data.videoStatuses?.[video.id] === "Watched").length}/{courseVideos.length}</span></button></div>
+    {sheetView === "sheet" ? <RoadmapPage data={data} today={localDate()} updateProblem={updateProblem} openProblem={openProblem} onVideoStatus={onVideoStatus} /> : sheetView === "videos" ? <VideosPage data={data} onVideoStatus={onVideoStatus} /> : <>
     <section className="surface-panel mb-4 flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-foreground"><PlayCircle size={22} /></span>
