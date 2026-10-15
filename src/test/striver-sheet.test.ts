@@ -31,6 +31,15 @@ describe("Striver A2Z sheet data", () => {
     expect(restored.problems).toHaveLength(402);
   });
 
+  it("preserves theory review and lesson progress in JSON backups", () => {
+    const data = createStarterData();
+    data.topicTheoryStatuses = { "Course Foundations": true, Arrays: true };
+    data.videoStatuses = { "https://www.youtube.com/watch?v=0bHoB32fuj0": "Watched" };
+    const restored = importJourney(exportJourney(data));
+    expect(restored.topicTheoryStatuses).toEqual(data.topicTheoryStatuses);
+    expect(restored.videoStatuses?.["https://www.youtube.com/watch?v=0bHoB32fuj0"]).toBe("Watched");
+  });
+
   it("migrates legacy revision status into the simplified status", () => {
     const restored = importJourney(JSON.stringify({
       data: {
