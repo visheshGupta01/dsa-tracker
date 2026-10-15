@@ -30,6 +30,8 @@ const rawVideos = {
     { "title": "Graph Representation in C++", "url": "https://www.youtube.com/watch?v=3oI-34aPMWM", "duration": "16 min", "order": 15 },
     { "title": "Introduction to Dynamic Programming", "url": "https://www.youtube.com/watch?v=tyB0ztf0DNY", "duration": "34 min", "order": 16 },
     { "title": "Climbing Stairs — Recurrence and DP", "url": "https://www.youtube.com/watch?v=mLfjzJsN8us", "duration": "16 min", "order": 17 },
+    { "title": "Binary Tree Representation in Java", "url": "https://www.youtube.com/watch?v=hyLyW7rP24I", "duration": "5 min", "order": 21 },
+    { "title": "Graph Representation in Java", "url": "https://www.youtube.com/watch?v=OsNklbh9gYI", "duration": "14 min", "order": 22 },
   ],
   "Beginner Problems": [
     {
