@@ -22,7 +22,14 @@ const rawVideos = {
     { "title": "Basic Maths for DSA — Euclidean Algorithm", "url": "https://www.youtube.com/watch?v=1xNbjMdbjug", "duration": "1 hr 3 min", "order": 7 },
     { "title": "Introduction to Recursion — Recursion Tree and Stack Space", "url": "https://www.youtube.com/watch?v=yVdKa8dnKiE", "duration": "23 min", "order": 8 },
     { "title": "Basic Problems on Recursion", "url": "https://www.youtube.com/watch?v=un6PLygfXrA", "duration": "22 min", "order": 9 },
-    { "title": "Hashing — Maps, Collisions and Time Complexity", "url": "https://www.youtube.com/watch?v=KEs5UyBJ39g", "duration": "1 hr", "order": 10 }
+    { "title": "Hashing — Maps, Collisions and Time Complexity", "url": "https://www.youtube.com/watch?v=KEs5UyBJ39g", "duration": "1 hr", "order": 10 },
+    { "title": "Introduction to Trees and Types of Trees", "url": "https://www.youtube.com/watch?v=_ANrF3FJm7I", "duration": "10 min", "order": 11 },
+    { "title": "Binary Tree Representation in C++", "url": "https://www.youtube.com/watch?v=ctCpP0RFDFc", "duration": "5 min", "order": 12 },
+    { "title": "Tree Traversal Techniques — DFS and BFS", "url": "https://www.youtube.com/watch?v=jmy0LaGET1I", "duration": "10 min", "order": 13 },
+    { "title": "Introduction to Graphs", "url": "https://www.youtube.com/watch?v=M3_pLsDdeuU", "duration": "14 min", "order": 14 },
+    { "title": "Graph Representation in C++", "url": "https://www.youtube.com/watch?v=3oI-34aPMWM", "duration": "16 min", "order": 15 },
+    { "title": "Introduction to Dynamic Programming", "url": "https://www.youtube.com/watch?v=tyB0ztf0DNY", "duration": "34 min", "order": 16 },
+    { "title": "Climbing Stairs — Recurrence and DP", "url": "https://www.youtube.com/watch?v=mLfjzJsN8us", "duration": "16 min", "order": 17 },
   ],
   "Beginner Problems": [
     {
