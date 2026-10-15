@@ -5,10 +5,10 @@ A personal, local-first tracker for studying Data Structures & Algorithms in C++
 ## Features
 
 - **Dashboard** — daily focus, streak, overall completion, and revision reminders.
-- **DSA Sheet** — 402 practice problems across 20 modules, plus a Videos tab grouping distinct source-linked lessons by topic with Watched / Not Watched / Revisit tracking.
+- **Guided learning** — each module combines concise concept notes, matching Striver lessons, ordered practice problems, and a single recommended next action (theory → video when available → problems).
 - **Progress** — study-time, solved-problem trends, and module completion analytics.
 - **Problem statuses** — Not Started, Solved, and Needs Revision.
-- **Video tracking** — independent lesson statuses persisted in local storage and included in JSON backups.
+- **Video tracking** — independent lesson statuses (Not Watched / Watched / Revisit) and theory-review flags are persisted in local storage and included in JSON backups. The separate Problems and Videos views remain available.
 - **Private by default** — progress is stored in this browser with `localStorage`; there is no account or backend.
 - **JSON backup/restore** — export progress or import it on another browser/device.
 - **Official practice resources** — links to TakeUForward, LeetCode, and GeeksforGeeks where available; optional editorial/video links are shown when present.
@@ -51,4 +51,4 @@ Import the repository into Vercel and use the detected build settings. Progress 
 
 ## Portfolio / LinkedIn
 
-Built DSA Journey, a responsive C++ practice tracker for Striver's A2Z sheet, with 402 practice problems, distinct linked Striver course videos, lesson tracking, module-wise progress, revision statuses, local-first persistence, JSON backup/restore, and analytics.
+Built DSA Journey, a responsive C++ practice tracker for Striver's A2Z sheet, with a guided theory → video → practice workflow, 402 A2Z practice problems, linked Striver course videos, lesson tracking, module-wise progress, revision statuses, local-first persistence, JSON backup/restore, and analytics.
