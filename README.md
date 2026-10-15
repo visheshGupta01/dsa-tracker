@@ -5,10 +5,10 @@ A personal, local-first tracker for studying Data Structures & Algorithms in C++
 ## Features
 
 - **Dashboard** — daily focus, streak, overall completion, and revision reminders.
-- **Guided learning** — each module combines concise concept notes, matching Striver lessons, ordered practice problems, and a single recommended next action (theory → video when available → problems).
+- **Official sheet path** — follow Striver’s numbered steps and subtopics in order. Each problem has its own practice link and matching video link when available; no invented theory → video → problem sequence.
 - **Progress** — study-time, solved-problem trends, and module completion analytics.
 - **Problem statuses** — Not Started, Solved, and Needs Revision.
-- **Video tracking** — independent lesson statuses (Not Watched / Watched / Revisit) and theory-review flags are persisted in local storage and included in JSON backups. The separate Problems and Videos views remain available.
+- **Video tracking** — independent lesson statuses (Not Watched / Watched / Revisit) and theory-review flags are persisted in local storage and included in JSON backups. The searchable All problems and Video library views remain available as secondary tools.
 - **Private by default** — progress is stored in this browser with `localStorage`; there is no account or backend.
 - **JSON backup/restore** — export progress or import it on another browser/device.
 - **Official practice resources** — links to TakeUForward, LeetCode, and GeeksforGeeks where available; optional editorial/video links are shown when present.
